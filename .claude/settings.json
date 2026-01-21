@@ -41,6 +41,16 @@
         "matcher": "tool == 'Bash' && tool_input.command matches '(rm -rf /|rm -rf ~|git push.*--force.*main|git push.*--force.*master|DROP DATABASE|DROP TABLE)'",
         "command": ["python", ".claude/hooks/block-dangerous.py"],
         "description": "Block dangerous commands"
+      },
+      {
+        "matcher": "(tool == 'Edit' || tool == 'Write') && tool_input.file_path matches '\\.dart$'",
+        "command": ["python", ".claude/hooks/security-scan.py"],
+        "description": "Scan Dart files for security vulnerabilities"
+      },
+      {
+        "matcher": "(tool == 'Edit' || tool == 'Write') && tool_input.file_path matches 'pubspec\\.yaml$'",
+        "command": ["python", ".claude/hooks/pubspec-check.py"],
+        "description": "Validate pubspec.yaml changes"
       }
     ],
     "PostToolUse": [
@@ -53,6 +63,16 @@
         "matcher": "(tool == 'Edit' || tool == 'Write') && tool_input.file_path matches '\\.dart$'",
         "command": ["python", ".claude/hooks/quality-check.py"],
         "description": "Check code quality rules"
+      },
+      {
+        "matcher": "(tool == 'Edit' || tool == 'Write') && tool_input.file_path matches 'pubspec\\.yaml$'",
+        "command": ["python", ".claude/hooks/auto-gitignore.py"],
+        "description": "Auto-update .gitignore for new packages"
+      },
+      {
+        "matcher": "tool == 'Write' && tool_input.file_path matches '\\.claude/(agents|skills|commands|templates|hooks)/'",
+        "command": ["python", ".claude/hooks/registry-sync.py"],
+        "description": "Remind to update registry for new config files"
       }
     ],
     "Stop": [

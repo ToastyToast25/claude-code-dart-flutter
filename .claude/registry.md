@@ -1214,7 +1214,7 @@ Future<Either<Failure, User>> signIn(String email, String password);
 | Total Skills | 30 |
 | Templates | 6 |
 | Commands | 7 |
-| Hooks | 6 |
+| Hooks | 10 |
 | Multi-Agent Workflows | 25 |
 | Auto-Update Rules | 4 |
 | Code Quality Rules | 8 |
@@ -1263,13 +1263,17 @@ Future<Either<Failure, User>> signIn(String email, String password);
 │   ├── page.dart.template
 │   ├── widget.dart.template
 │   └── test.dart.template
-├── hooks/                   # Enforcement hooks (6 hooks)
-│   ├── block-secrets.py
-│   ├── block-dangerous.py
-│   ├── format-dart.py
-│   ├── session-end.py
-│   ├── quality-check.py
-│   └── validate-project.py
+├── hooks/                   # Enforcement hooks (10 hooks)
+│   ├── block-secrets.py     # Block editing secret files
+│   ├── block-dangerous.py   # Block dangerous commands
+│   ├── format-dart.py       # Auto-format Dart files
+│   ├── session-end.py       # Record session learnings
+│   ├── quality-check.py     # Check code quality rules
+│   ├── validate-project.py  # Validate project configuration
+│   ├── security-scan.py     # Scan for security vulnerabilities
+│   ├── pubspec-check.py     # Validate pubspec.yaml changes
+│   ├── auto-gitignore.py    # Auto-update .gitignore
+│   └── registry-sync.py     # Remind to update registry
 ├── rules/                   # Mandatory rules
 │   └── code-quality.md
 ├── memory/                  # Persistent learnings

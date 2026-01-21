@@ -24,7 +24,7 @@ claude
 | **Skills** | 30 | Reusable code patterns with auto-activation |
 | **Templates** | 6 | Boilerplate for features, BLoCs, pages, etc. |
 | **Commands** | 7 | Slash commands for common workflows |
-| **Hooks** | 6 | Enforcement scripts for code quality |
+| **Hooks** | 10 | Enforcement scripts for code quality |
 
 ## Slash Commands
 
@@ -102,11 +102,12 @@ Skills automatically activate when you work on matching files:
 │   ├── bloc.dart.template
 │   ├── page.dart.template
 │   └── ... (3 more)
-├── hooks/               # 6 enforcement scripts
+├── hooks/               # 10 enforcement scripts
 │   ├── block-secrets.py
+│   ├── security-scan.py
 │   ├── quality-check.py
-│   ├── validate-project.py
-│   └── ... (3 more)
+│   ├── auto-gitignore.py
+│   └── ... (6 more)
 ├── rules/               # Mandatory code quality rules
 ├── memory/              # Persistent learnings
 └── docs/                # Reference documentation
@@ -116,10 +117,20 @@ Skills automatically activate when you work on matching files:
 
 These rules are automatically enforced by hooks:
 
+**PreToolUse (before execution):**
 - **Blocked**: Editing `.env`, `secrets.*`, `credentials.*` files
 - **Blocked**: `rm -rf /`, `git push --force main`, `DROP DATABASE`
+- **Security scan**: Blocks hardcoded API keys, detects injection patterns
+- **Pubspec validation**: Checks version format, warns about conflicting packages
+
+**PostToolUse (after execution):**
 - **Auto-format**: Dart files are formatted after edits
-- **Quality check**: No TODO comments, dead code, or deprecated APIs allowed
+- **Quality check**: No TODO comments, dead code, or deprecated APIs
+- **Auto-gitignore**: Updates .gitignore when new packages are added
+- **Registry sync**: Reminds to update registry when new config files are created
+
+**Stop (on session end):**
+- **Session recording**: Captures learnings for future sessions
 
 ## Security Features
 
@@ -148,7 +159,7 @@ Keep configuration files synchronized with `/project:validate`:
 # [OK] Skills: 30 (registry: 30)
 # [OK] Commands: 7 (registry: 7)
 # [OK] Templates: 6 (registry: 6)
-# [OK] Hooks: 6 (registry: 6)
+# [OK] Hooks: 10 (registry: 10)
 ```
 
 The validation checks:
