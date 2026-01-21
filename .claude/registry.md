@@ -924,6 +924,7 @@ If multiple agents could apply, use this priority:
 | Generate Mocks | `skills/generate-mocks.md` | generate mocks, create mocks, test mocks |
 | Versioning | `skills/versioning.md` | version bump, release, changelog, semver |
 | Input Security | `skills/input-security.md` | input security, sanitize, xss, ssrf, injection, secure input |
+| Project Maintenance | `skills/project-maintenance.md` | maintain project, update registry, sync files, project config |
 
 ---
 
@@ -1210,9 +1211,10 @@ Future<Either<Failure, User>> signIn(String email, String password);
 | Category | Count |
 |----------|-------|
 | Total Agents | 34 |
-| Total Skills | 29 |
+| Total Skills | 30 |
 | Templates | 6 |
-| Commands | 6 |
+| Commands | 7 |
+| Hooks | 6 |
 | Multi-Agent Workflows | 25 |
 | Auto-Update Rules | 4 |
 | Code Quality Rules | 8 |
@@ -1235,23 +1237,25 @@ Future<Either<Failure, User>> signIn(String email, String password);
 │   ├── learning-system.md
 │   ├── agent-testing.md
 │   └── ... (28 more)
-├── skills/                  # Skill definitions (29 skills)
+├── skills/                  # Skill definitions (30 skills)
 │   ├── create-feature.md
 │   ├── create-widget.md
 │   ├── versioning.md
 │   ├── input-security.md
+│   ├── project-maintenance.md
 │   └── ... (25 more)
 ├── docs/                    # Reference documentation (3 docs)
 │   ├── effective-dart.md    # Dart style guide
 │   ├── flutter-patterns.md  # Flutter best practices
 │   └── packages.md          # Recommended packages
-├── commands/                # Slash commands (6 commands)
+├── commands/                # Slash commands (7 commands)
 │   ├── new.md               # /project:new
 │   ├── deploy.md            # /project:deploy
 │   ├── test.md              # /project:test
 │   ├── review.md            # /project:review
 │   ├── fix-issue.md         # /project:fix-issue
-│   └── release.md           # /project:release
+│   ├── release.md           # /project:release
+│   └── validate.md          # /project:validate
 ├── templates/               # Code templates (6 templates)
 │   ├── feature.dart.template
 │   ├── bloc.dart.template
@@ -1259,12 +1263,13 @@ Future<Either<Failure, User>> signIn(String email, String password);
 │   ├── page.dart.template
 │   ├── widget.dart.template
 │   └── test.dart.template
-├── hooks/                   # Enforcement hooks (5 hooks)
+├── hooks/                   # Enforcement hooks (6 hooks)
 │   ├── block-secrets.py
 │   ├── block-dangerous.py
 │   ├── format-dart.py
 │   ├── session-end.py
-│   └── quality-check.py
+│   ├── quality-check.py
+│   └── validate-project.py
 ├── rules/                   # Mandatory rules
 │   └── code-quality.md
 ├── memory/                  # Persistent learnings
