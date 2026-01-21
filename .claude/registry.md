@@ -925,6 +925,7 @@ If multiple agents could apply, use this priority:
 | Versioning | `skills/versioning.md` | version bump, release, changelog, semver |
 | Input Security | `skills/input-security.md` | input security, sanitize, xss, ssrf, injection, secure input |
 | Project Maintenance | `skills/project-maintenance.md` | maintain project, update registry, sync files, project config |
+| Package Presets | `skills/package-presets.md` | package presets, dependencies, minimal, standard, enterprise |
 
 ---
 
@@ -937,6 +938,10 @@ Code templates for rapid scaffolding. Located in `templates/`.
 | Feature Module | `templates/feature.dart.template` | Complete clean architecture feature |
 | BLoC | `templates/bloc.dart.template` | State management with events/states |
 | Repository | `templates/repository.dart.template` | Data layer with data sources |
+| Project Structure | `templates/project-structure.template` | Directory layouts for all project patterns |
+| Pubspec | `templates/pubspec.yaml.template` | Configurable pubspec with package presets |
+| Analysis Options | `templates/analysis_options.yaml.template` | Strict linting configuration |
+| Auth Feature | `templates/auth-feature.template` | Complete authentication scaffold |
 | Page | `templates/page.dart.template` | Full page with BLoC integration |
 | Widget | `templates/widget.dart.template` | Stateless/Stateful/Consumer variants |
 | Test | `templates/test.dart.template` | Unit/BLoC/Widget/Golden tests |
@@ -1211,8 +1216,8 @@ Future<Either<Failure, User>> signIn(String email, String password);
 | Category | Count |
 |----------|-------|
 | Total Agents | 34 |
-| Total Skills | 30 |
-| Templates | 6 |
+| Total Skills | 31 |
+| Templates | 10 |
 | Commands | 7 |
 | Hooks | 10 |
 | Multi-Agent Workflows | 25 |
@@ -1237,12 +1242,13 @@ Future<Either<Failure, User>> signIn(String email, String password);
 │   ├── learning-system.md
 │   ├── agent-testing.md
 │   └── ... (28 more)
-├── skills/                  # Skill definitions (30 skills)
+├── skills/                  # Skill definitions (31 skills)
 │   ├── create-feature.md
 │   ├── create-widget.md
 │   ├── versioning.md
 │   ├── input-security.md
 │   ├── project-maintenance.md
+│   ├── package-presets.md
 │   └── ... (25 more)
 ├── docs/                    # Reference documentation (3 docs)
 │   ├── effective-dart.md    # Dart style guide
@@ -1256,13 +1262,17 @@ Future<Either<Failure, User>> signIn(String email, String password);
 │   ├── fix-issue.md         # /project:fix-issue
 │   ├── release.md           # /project:release
 │   └── validate.md          # /project:validate
-├── templates/               # Code templates (6 templates)
+├── templates/               # Code templates (10 templates)
 │   ├── feature.dart.template
 │   ├── bloc.dart.template
 │   ├── repository.dart.template
 │   ├── page.dart.template
 │   ├── widget.dart.template
-│   └── test.dart.template
+│   ├── test.dart.template
+│   ├── project-structure.template
+│   ├── pubspec.yaml.template
+│   ├── analysis_options.yaml.template
+│   └── auth-feature.template
 ├── hooks/                   # Enforcement hooks (10 hooks)
 │   ├── block-secrets.py     # Block editing secret files
 │   ├── block-dangerous.py   # Block dangerous commands

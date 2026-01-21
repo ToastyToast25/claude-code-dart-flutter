@@ -134,7 +134,65 @@ What database will you use?
 6. None needed
 ```
 
-### Question 7: Project Visibility
+### Question 7: State Management
+
+```
+Which state management approach do you prefer?
+
+1. Riverpod (recommended - type-safe, testable, modern)
+   → flutter_riverpod, riverpod_annotation
+   → Auto-generates providers with riverpod_generator
+
+2. BLoC/Cubit (event-driven, scalable)
+   → flutter_bloc, bloc
+   → Great for complex business logic
+
+3. Provider (simple, lightweight)
+   → provider package
+   → Good for smaller apps
+
+4. Not sure - Use Riverpod (default)
+```
+
+### Question 8: Authentication
+
+```
+Do you need authentication?
+
+1. Yes - Email/Password + Social (Google, Apple)
+   → Will scaffold full auth feature with BLoC
+   → Login, Register, Forgot Password pages
+   → Secure token storage
+
+2. Yes - Firebase Auth only
+   → Firebase Auth integration
+   → Social login providers
+
+3. Yes - Custom backend auth
+   → JWT-based auth scaffold
+   → Refresh token handling
+
+4. No - Skip authentication
+```
+
+### Question 9: Package Preset
+
+```
+Which package preset fits your needs?
+
+1. Minimal - Just the essentials
+   → State management, basic HTTP, lints
+
+2. Standard (recommended) - Production-ready
+   → Networking, storage, forms, DI, code gen
+
+3. Enterprise - Full monitoring suite
+   → Sentry, analytics, feature flags, offline support
+
+4. Custom - I'll choose packages myself
+```
+
+### Question 10: Project Visibility
 
 ```
 Is this project private or open source?
@@ -654,3 +712,79 @@ Question 1 (Project Type) →
 - Working in an empty directory
 - User asks about project structure
 - User mentions subdomains or multi-app setup
+
+---
+
+## Available Templates
+
+Use these templates during project setup:
+
+| Template | File | Purpose |
+|----------|------|---------|
+| Project Structure | `templates/project-structure.template` | Directory layouts for all patterns |
+| Pubspec | `templates/pubspec.yaml.template` | Configurable pubspec with presets |
+| Analysis Options | `templates/analysis_options.yaml.template` | Strict linting configuration |
+| Auth Feature | `templates/auth-feature.template` | Complete authentication scaffold |
+| Feature | `templates/feature.dart.template` | Clean architecture feature |
+| BLoC | `templates/bloc.dart.template` | State management scaffold |
+| Page | `templates/page.dart.template` | Page with BLoC integration |
+| Widget | `templates/widget.dart.template` | Reusable widget patterns |
+| Repository | `templates/repository.dart.template` | Data layer scaffold |
+| Test | `templates/test.dart.template` | Test file patterns |
+
+---
+
+## Package Presets
+
+Reference `skills/package-presets.md` for:
+
+| Preset | Use Case |
+|--------|----------|
+| Minimal | Prototypes, learning |
+| Standard | Most production apps |
+| Firebase | Firebase-backed apps |
+| Enterprise | Large-scale, monitored apps |
+| E-Commerce | Shopping, payments |
+| Social | Media, sharing, chat |
+| Backend | dart_frog servers |
+
+---
+
+## Project Generator Script
+
+For automated generation:
+
+```bash
+# Generate with config file
+python .claude/scripts/generate-project.py --config config.json
+
+# Config file format:
+{
+  "project_name": "my_app",
+  "description": "My Flutter app",
+  "state_management": "riverpod",
+  "routing": "go_router",
+  "firebase": false,
+  "platforms": ["android", "ios", "web"]
+}
+```
+
+---
+
+## Quick Setup Commands
+
+After project creation, run:
+
+```bash
+# Install dependencies
+flutter pub get
+
+# Generate code (freezed, json_serializable, etc.)
+flutter pub run build_runner build --delete-conflicting-outputs
+
+# Run the app
+flutter run
+
+# Run tests
+flutter test
+```

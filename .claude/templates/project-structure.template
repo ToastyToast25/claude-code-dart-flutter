@@ -1,0 +1,209 @@
+# Project Structure Template
+
+## Single App Structure
+
+```
+{{project_name}}/
+├── lib/
+│   ├── app/
+│   │   ├── app.dart                    # App widget with MaterialApp/Router
+│   │   ├── app_config.dart             # Environment configuration
+│   │   └── router/
+│   │       ├── app_router.dart         # GoRouter/AutoRoute setup
+│   │       └── routes.dart             # Route definitions
+│   ├── core/
+│   │   ├── constants/
+│   │   │   ├── app_constants.dart      # App-wide constants
+│   │   │   ├── api_constants.dart      # API endpoints
+│   │   │   └── ui_constants.dart       # UI constants (padding, colors)
+│   │   ├── errors/
+│   │   │   ├── exceptions.dart         # Custom exceptions
+│   │   │   └── failures.dart           # Failure classes for Either
+│   │   ├── extensions/
+│   │   │   ├── context_extensions.dart # BuildContext extensions
+│   │   │   ├── string_extensions.dart
+│   │   │   └── date_extensions.dart
+│   │   ├── services/
+│   │   │   ├── logger_service.dart     # Logging service
+│   │   │   ├── storage_service.dart    # Local storage
+│   │   │   └── network_service.dart    # Network info
+│   │   └── utils/
+│   │       ├── validators.dart         # Input validators
+│   │       └── formatters.dart         # Text formatters
+│   ├── features/
+│   │   └── {{feature_name}}/
+│   │       ├── data/
+│   │       │   ├── datasources/
+│   │       │   │   ├── {{feature_name}}_local_datasource.dart
+│   │       │   │   └── {{feature_name}}_remote_datasource.dart
+│   │       │   ├── models/
+│   │       │   │   └── {{feature_name}}_model.dart
+│   │       │   └── repositories/
+│   │       │       └── {{feature_name}}_repository_impl.dart
+│   │       ├── domain/
+│   │       │   ├── entities/
+│   │       │   │   └── {{feature_name}}_entity.dart
+│   │       │   ├── repositories/
+│   │       │   │   └── {{feature_name}}_repository.dart
+│   │       │   └── usecases/
+│   │       │       └── get_{{feature_name}}_usecase.dart
+│   │       └── presentation/
+│   │           ├── bloc/
+│   │           │   ├── {{feature_name}}_bloc.dart
+│   │           │   ├── {{feature_name}}_event.dart
+│   │           │   └── {{feature_name}}_state.dart
+│   │           ├── pages/
+│   │           │   └── {{feature_name}}_page.dart
+│   │           └── widgets/
+│   │               └── {{feature_name}}_widget.dart
+│   ├── shared/
+│   │   ├── data/
+│   │   │   └── api_client.dart         # Dio/HTTP client
+│   │   ├── domain/
+│   │   │   └── entities/
+│   │   │       └── user.dart           # Shared entities
+│   │   └── presentation/
+│   │       ├── widgets/
+│   │       │   ├── app_button.dart
+│   │       │   ├── app_text_field.dart
+│   │       │   └── loading_indicator.dart
+│   │       └── theme/
+│   │           ├── app_theme.dart
+│   │           ├── app_colors.dart
+│   │           └── app_text_styles.dart
+│   ├── injection.dart                  # Dependency injection setup
+│   └── main.dart                       # Entry point
+├── test/
+│   ├── features/
+│   │   └── {{feature_name}}/
+│   │       ├── data/
+│   │       ├── domain/
+│   │       └── presentation/
+│   ├── helpers/
+│   │   ├── test_helpers.dart
+│   │   └── mock_helpers.dart
+│   └── fixtures/
+│       └── fixture_reader.dart
+├── integration_test/
+│   └── app_test.dart
+├── assets/
+│   ├── images/
+│   ├── fonts/
+│   └── icons/
+├── .claude/
+│   └── context.md
+├── pubspec.yaml
+├── analysis_options.yaml
+├── .gitignore
+├── .env.example
+└── README.md
+```
+
+## Monorepo Structure (Melos)
+
+```
+{{project_name}}/
+├── apps/
+│   ├── {{app_name}}/
+│   │   ├── lib/
+│   │   ├── test/
+│   │   └── pubspec.yaml
+│   └── {{admin_name}}/
+│       ├── lib/
+│       ├── test/
+│       └── pubspec.yaml
+├── packages/
+│   ├── core/
+│   │   ├── lib/
+│   │   │   └── src/
+│   │   │       ├── constants/
+│   │   │       ├── errors/
+│   │   │       ├── extensions/
+│   │   │       └── utils/
+│   │   └── pubspec.yaml
+│   ├── api_client/
+│   │   ├── lib/
+│   │   │   └── src/
+│   │   │       ├── api_client.dart
+│   │   │       ├── interceptors/
+│   │   │       └── endpoints/
+│   │   └── pubspec.yaml
+│   ├── models/
+│   │   ├── lib/
+│   │   │   └── src/
+│   │   │       └── models/
+│   │   └── pubspec.yaml
+│   ├── auth/
+│   │   ├── lib/
+│   │   │   └── src/
+│   │   │       ├── auth_service.dart
+│   │   │       ├── auth_state.dart
+│   │   │       └── auth_repository.dart
+│   │   └── pubspec.yaml
+│   └── ui_kit/
+│       ├── lib/
+│       │   └── src/
+│       │       ├── theme/
+│       │       ├── widgets/
+│       │       └── tokens/
+│       └── pubspec.yaml
+├── backend/
+│   ├── bin/
+│   │   └── server.dart
+│   ├── lib/
+│   │   ├── routes/
+│   │   ├── middleware/
+│   │   └── services/
+│   └── pubspec.yaml
+├── tools/
+│   └── scripts/
+├── .claude/
+├── melos.yaml
+├── pubspec.yaml
+└── README.md
+```
+
+## Backend Structure (dart_frog)
+
+```
+backend/
+├── routes/
+│   ├── _middleware.dart              # Global middleware
+│   ├── index.dart                    # Root route
+│   ├── health.dart                   # Health check
+│   └── api/
+│       └── v1/
+│           ├── _middleware.dart      # API v1 middleware
+│           ├── auth/
+│           │   ├── login.dart
+│           │   ├── register.dart
+│           │   └── refresh.dart
+│           └── {{resource}}/
+│               ├── index.dart        # GET all, POST
+│               └── [id].dart         # GET, PUT, DELETE by ID
+├── lib/
+│   ├── services/
+│   │   ├── database_service.dart
+│   │   ├── auth_service.dart
+│   │   └── email_service.dart
+│   ├── repositories/
+│   │   └── {{resource}}_repository.dart
+│   ├── models/
+│   │   └── {{resource}}.dart
+│   ├── middleware/
+│   │   ├── auth_middleware.dart
+│   │   ├── cors_middleware.dart
+│   │   └── rate_limit_middleware.dart
+│   └── utils/
+│       ├── jwt_utils.dart
+│       └── validators.dart
+├── test/
+│   └── routes/
+├── prisma/
+│   ├── schema.prisma
+│   └── migrations/
+├── .env.example
+├── pubspec.yaml
+├── Dockerfile
+└── docker-compose.yml
+```

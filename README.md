@@ -21,8 +21,8 @@ claude
 | Component | Count | Description |
 |-----------|-------|-------------|
 | **Agents** | 34 | Specialized assistants for different tasks |
-| **Skills** | 30 | Reusable code patterns with auto-activation |
-| **Templates** | 6 | Boilerplate for features, BLoCs, pages, etc. |
+| **Skills** | 31 | Reusable code patterns with auto-activation |
+| **Templates** | 10 | Boilerplate for features, BLoCs, pages, etc. |
 | **Commands** | 7 | Slash commands for common workflows |
 | **Hooks** | 10 | Enforcement scripts for code quality |
 
@@ -156,9 +156,9 @@ Keep configuration files synchronized with `/project:validate`:
 # Output:
 # === Project Validation Report ===
 # [OK] Agents: 34 (registry: 34)
-# [OK] Skills: 30 (registry: 30)
+# [OK] Skills: 31 (registry: 31)
 # [OK] Commands: 7 (registry: 7)
-# [OK] Templates: 6 (registry: 6)
+# [OK] Templates: 10 (registry: 10)
 # [OK] Hooks: 10 (registry: 10)
 ```
 

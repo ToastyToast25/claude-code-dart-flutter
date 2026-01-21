@@ -1,0 +1,161 @@
+# Pubspec.yaml Template
+# Replace {{placeholders}} with actual values
+
+name: {{project_name}}
+description: {{project_description}}
+version: 1.0.0+1
+publish_to: none
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  {{#flutter}}
+  flutter: ">=3.16.0"
+  {{/flutter}}
+
+dependencies:
+  {{#flutter}}
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  {{/flutter}}
+
+  # === STATE MANAGEMENT ===
+  {{#riverpod}}
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+  {{/riverpod}}
+  {{#bloc}}
+  flutter_bloc: ^8.1.3
+  bloc: ^8.1.2
+  {{/bloc}}
+  {{#provider}}
+  provider: ^6.1.1
+  {{/provider}}
+
+  # === NETWORKING ===
+  dio: ^5.4.0
+  retrofit: ^4.0.3
+  connectivity_plus: ^5.0.2
+
+  # === LOCAL STORAGE ===
+  {{#hive}}
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  {{/hive}}
+  {{#shared_preferences}}
+  shared_preferences: ^2.2.2
+  {{/shared_preferences}}
+  flutter_secure_storage: ^9.0.0
+
+  # === ROUTING ===
+  {{#go_router}}
+  go_router: ^13.0.1
+  {{/go_router}}
+  {{#auto_route}}
+  auto_route: ^7.8.4
+  {{/auto_route}}
+
+  # === MODELS & SERIALIZATION ===
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+  equatable: ^2.0.5
+
+  # === UTILITIES ===
+  dartz: ^0.10.1                    # Functional programming (Either)
+  get_it: ^7.6.4                    # Service locator
+  injectable: ^2.3.2                # DI code generation
+  intl: ^0.18.1                     # Internationalization
+  collection: ^1.18.0               # Collection utilities
+  uuid: ^4.2.2                      # UUID generation
+  path: ^1.8.3                      # Path manipulation
+
+  # === UI ===
+  {{#flutter}}
+  gap: ^3.0.1                       # Spacing widgets
+  shimmer: ^3.0.0                   # Loading placeholders
+  cached_network_image: ^3.3.1     # Image caching
+  flutter_svg: ^2.0.9               # SVG support
+  {{/flutter}}
+
+  # === FORMS ===
+  {{#flutter}}
+  reactive_forms: ^16.1.1           # Form handling
+  {{/flutter}}
+
+  # === LOGGING & ERROR TRACKING ===
+  logger: ^2.0.2+1
+  {{#sentry}}
+  sentry_flutter: ^7.14.0
+  {{/sentry}}
+  {{#firebase_crashlytics}}
+  firebase_crashlytics: ^3.4.9
+  {{/firebase_crashlytics}}
+
+  # === FIREBASE (Optional) ===
+  {{#firebase}}
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.16.0
+  cloud_firestore: ^4.14.0
+  firebase_messaging: ^14.7.10
+  {{/firebase}}
+
+  # === AUTHENTICATION ===
+  {{#google_sign_in}}
+  google_sign_in: ^6.2.1
+  {{/google_sign_in}}
+  {{#sign_in_with_apple}}
+  sign_in_with_apple: ^5.0.0
+  {{/sign_in_with_apple}}
+
+dev_dependencies:
+  {{#flutter}}
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  {{/flutter}}
+  {{^flutter}}
+  lints: ^3.0.0
+  test: ^1.24.9
+  {{/flutter}}
+
+  # === CODE GENERATION ===
+  build_runner: ^2.4.8
+  freezed: ^2.4.6
+  json_serializable: ^6.7.1
+  {{#riverpod}}
+  riverpod_generator: ^2.3.9
+  {{/riverpod}}
+  {{#auto_route}}
+  auto_route_generator: ^7.3.2
+  {{/auto_route}}
+  injectable_generator: ^2.4.1
+  retrofit_generator: ^8.0.6
+
+  # === TESTING ===
+  mocktail: ^1.0.1
+  bloc_test: ^9.1.5
+  {{#flutter}}
+  golden_toolkit: ^0.15.0
+  network_image_mock: ^2.1.1
+  {{/flutter}}
+
+{{#flutter}}
+flutter:
+  uses-material-design: true
+  generate: true                    # Enable l10n
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/
+
+  fonts:
+    - family: {{font_family}}
+      fonts:
+        - asset: assets/fonts/{{font_family}}-Regular.ttf
+        - asset: assets/fonts/{{font_family}}-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/{{font_family}}-Bold.ttf
+          weight: 700
+{{/flutter}}

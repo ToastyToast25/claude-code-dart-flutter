@@ -1,0 +1,819 @@
+# Authentication Feature Template
+
+## Directory Structure
+
+```
+lib/features/auth/
+├── data/
+│   ├── datasources/
+│   │   ├── auth_local_datasource.dart
+│   │   └── auth_remote_datasource.dart
+│   ├── models/
+│   │   ├── user_model.dart
+│   │   └── auth_token_model.dart
+│   └── repositories/
+│       └── auth_repository_impl.dart
+├── domain/
+│   ├── entities/
+│   │   ├── user.dart
+│   │   └── auth_token.dart
+│   ├── repositories/
+│   │   └── auth_repository.dart
+│   └── usecases/
+│       ├── sign_in_usecase.dart
+│       ├── sign_up_usecase.dart
+│       ├── sign_out_usecase.dart
+│       ├── get_current_user_usecase.dart
+│       └── forgot_password_usecase.dart
+└── presentation/
+    ├── bloc/
+    │   ├── auth_bloc.dart
+    │   ├── auth_event.dart
+    │   └── auth_state.dart
+    ├── pages/
+    │   ├── login_page.dart
+    │   ├── register_page.dart
+    │   ├── forgot_password_page.dart
+    │   └── verify_email_page.dart
+    └── widgets/
+        ├── auth_form.dart
+        ├── social_login_buttons.dart
+        └── password_strength_indicator.dart
+```
+
+---
+
+## Domain Layer
+
+### entities/user.dart
+
+```dart
+import 'package:equatable/equatable.dart';
+
+class User extends Equatable {
+  final String id;
+  final String email;
+  final String? displayName;
+  final String? photoUrl;
+  final bool emailVerified;
+  final DateTime createdAt;
+  final DateTime? lastLoginAt;
+
+  const User({
+    required this.id,
+    required this.email,
+    this.displayName,
+    this.photoUrl,
+    this.emailVerified = false,
+    required this.createdAt,
+    this.lastLoginAt,
+  });
+
+  bool get hasCompletedProfile => displayName != null && displayName!.isNotEmpty;
+
+  @override
+  List<Object?> get props => [
+        id,
+        email,
+        displayName,
+        photoUrl,
+        emailVerified,
+        createdAt,
+        lastLoginAt,
+      ];
+}
+```
+
+### entities/auth_token.dart
+
+```dart
+import 'package:equatable/equatable.dart';
+
+class AuthToken extends Equatable {
+  final String accessToken;
+  final String refreshToken;
+  final DateTime expiresAt;
+
+  const AuthToken({
+    required this.accessToken,
+    required this.refreshToken,
+    required this.expiresAt,
+  });
+
+  bool get isExpired => DateTime.now().isAfter(expiresAt);
+
+  bool get willExpireSoon =>
+      DateTime.now().isAfter(expiresAt.subtract(const Duration(minutes: 5)));
+
+  @override
+  List<Object?> get props => [accessToken, refreshToken, expiresAt];
+}
+```
+
+### repositories/auth_repository.dart
+
+```dart
+import 'package:dartz/dartz.dart';
+import '../../../../core/errors/failures.dart';
+import '../entities/user.dart';
+import '../entities/auth_token.dart';
+
+abstract class AuthRepository {
+  /// Get the currently authenticated user
+  Future<Either<Failure, User?>> getCurrentUser();
+
+  /// Sign in with email and password
+  Future<Either<Failure, User>> signInWithEmailPassword({
+    required String email,
+    required String password,
+  });
+
+  /// Sign up with email and password
+  Future<Either<Failure, User>> signUpWithEmailPassword({
+    required String email,
+    required String password,
+    String? displayName,
+  });
+
+  /// Sign in with Google
+  Future<Either<Failure, User>> signInWithGoogle();
+
+  /// Sign in with Apple
+  Future<Either<Failure, User>> signInWithApple();
+
+  /// Sign out
+  Future<Either<Failure, void>> signOut();
+
+  /// Send password reset email
+  Future<Either<Failure, void>> sendPasswordResetEmail(String email);
+
+  /// Send email verification
+  Future<Either<Failure, void>> sendEmailVerification();
+
+  /// Refresh auth token
+  Future<Either<Failure, AuthToken>> refreshToken();
+
+  /// Check if user is authenticated
+  Future<bool> isAuthenticated();
+
+  /// Stream of auth state changes
+  Stream<User?> get authStateChanges;
+}
+```
+
+### usecases/sign_in_usecase.dart
+
+```dart
+import 'package:dartz/dartz.dart';
+import 'package:equatable/equatable.dart';
+import '../../../../core/errors/failures.dart';
+import '../../../../core/usecases/usecase.dart';
+import '../entities/user.dart';
+import '../repositories/auth_repository.dart';
+
+class SignInUseCase implements UseCase<User, SignInParams> {
+  final AuthRepository repository;
+
+  SignInUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, User>> call(SignInParams params) async {
+    return repository.signInWithEmailPassword(
+      email: params.email,
+      password: params.password,
+    );
+  }
+}
+
+class SignInParams extends Equatable {
+  final String email;
+  final String password;
+
+  const SignInParams({
+    required this.email,
+    required this.password,
+  });
+
+  @override
+  List<Object?> get props => [email, password];
+}
+```
+
+---
+
+## Data Layer
+
+### models/user_model.dart
+
+```dart
+import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../domain/entities/user.dart';
+
+part 'user_model.freezed.dart';
+part 'user_model.g.dart';
+
+@freezed
+class UserModel with _$UserModel {
+  const UserModel._();
+
+  const factory UserModel({
+    required String id,
+    required String email,
+    String? displayName,
+    String? photoUrl,
+    @Default(false) bool emailVerified,
+    required DateTime createdAt,
+    DateTime? lastLoginAt,
+  }) = _UserModel;
+
+  factory UserModel.fromJson(Map<String, dynamic> json) =>
+      _$UserModelFromJson(json);
+
+  User toEntity() => User(
+        id: id,
+        email: email,
+        displayName: displayName,
+        photoUrl: photoUrl,
+        emailVerified: emailVerified,
+        createdAt: createdAt,
+        lastLoginAt: lastLoginAt,
+      );
+
+  factory UserModel.fromEntity(User user) => UserModel(
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        photoUrl: user.photoUrl,
+        emailVerified: user.emailVerified,
+        createdAt: user.createdAt,
+        lastLoginAt: user.lastLoginAt,
+      );
+}
+```
+
+### datasources/auth_remote_datasource.dart
+
+```dart
+import 'package:dio/dio.dart';
+import '../models/user_model.dart';
+import '../models/auth_token_model.dart';
+
+abstract class AuthRemoteDataSource {
+  Future<UserModel> signInWithEmailPassword({
+    required String email,
+    required String password,
+  });
+
+  Future<UserModel> signUpWithEmailPassword({
+    required String email,
+    required String password,
+    String? displayName,
+  });
+
+  Future<UserModel> signInWithGoogle(String idToken);
+
+  Future<UserModel> signInWithApple({
+    required String identityToken,
+    required String authorizationCode,
+  });
+
+  Future<void> signOut();
+
+  Future<void> sendPasswordResetEmail(String email);
+
+  Future<AuthTokenModel> refreshToken(String refreshToken);
+
+  Future<UserModel?> getCurrentUser();
+}
+
+class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
+  final Dio dio;
+
+  AuthRemoteDataSourceImpl({required this.dio});
+
+  @override
+  Future<UserModel> signInWithEmailPassword({
+    required String email,
+    required String password,
+  }) async {
+    final response = await dio.post(
+      '/auth/login',
+      data: {'email': email, 'password': password},
+    );
+    return UserModel.fromJson(response.data['user']);
+  }
+
+  @override
+  Future<UserModel> signUpWithEmailPassword({
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
+    final response = await dio.post(
+      '/auth/register',
+      data: {
+        'email': email,
+        'password': password,
+        if (displayName != null) 'displayName': displayName,
+      },
+    );
+    return UserModel.fromJson(response.data['user']);
+  }
+
+  @override
+  Future<UserModel> signInWithGoogle(String idToken) async {
+    final response = await dio.post(
+      '/auth/google',
+      data: {'idToken': idToken},
+    );
+    return UserModel.fromJson(response.data['user']);
+  }
+
+  @override
+  Future<UserModel> signInWithApple({
+    required String identityToken,
+    required String authorizationCode,
+  }) async {
+    final response = await dio.post(
+      '/auth/apple',
+      data: {
+        'identityToken': identityToken,
+        'authorizationCode': authorizationCode,
+      },
+    );
+    return UserModel.fromJson(response.data['user']);
+  }
+
+  @override
+  Future<void> signOut() async {
+    await dio.post('/auth/logout');
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    await dio.post('/auth/forgot-password', data: {'email': email});
+  }
+
+  @override
+  Future<AuthTokenModel> refreshToken(String refreshToken) async {
+    final response = await dio.post(
+      '/auth/refresh',
+      data: {'refreshToken': refreshToken},
+    );
+    return AuthTokenModel.fromJson(response.data);
+  }
+
+  @override
+  Future<UserModel?> getCurrentUser() async {
+    try {
+      final response = await dio.get('/auth/me');
+      return UserModel.fromJson(response.data);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) return null;
+      rethrow;
+    }
+  }
+}
+```
+
+### datasources/auth_local_datasource.dart
+
+```dart
+import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../models/auth_token_model.dart';
+import '../models/user_model.dart';
+
+abstract class AuthLocalDataSource {
+  Future<void> cacheToken(AuthTokenModel token);
+  Future<AuthTokenModel?> getCachedToken();
+  Future<void> clearToken();
+  Future<void> cacheUser(UserModel user);
+  Future<UserModel?> getCachedUser();
+  Future<void> clearUser();
+  Future<void> clearAll();
+}
+
+class AuthLocalDataSourceImpl implements AuthLocalDataSource {
+  final FlutterSecureStorage secureStorage;
+
+  static const _tokenKey = 'auth_token';
+  static const _userKey = 'cached_user';
+
+  AuthLocalDataSourceImpl({required this.secureStorage});
+
+  @override
+  Future<void> cacheToken(AuthTokenModel token) async {
+    await secureStorage.write(
+      key: _tokenKey,
+      value: jsonEncode(token.toJson()),
+    );
+  }
+
+  @override
+  Future<AuthTokenModel?> getCachedToken() async {
+    final jsonString = await secureStorage.read(key: _tokenKey);
+    if (jsonString == null) return null;
+    return AuthTokenModel.fromJson(jsonDecode(jsonString));
+  }
+
+  @override
+  Future<void> clearToken() async {
+    await secureStorage.delete(key: _tokenKey);
+  }
+
+  @override
+  Future<void> cacheUser(UserModel user) async {
+    await secureStorage.write(
+      key: _userKey,
+      value: jsonEncode(user.toJson()),
+    );
+  }
+
+  @override
+  Future<UserModel?> getCachedUser() async {
+    final jsonString = await secureStorage.read(key: _userKey);
+    if (jsonString == null) return null;
+    return UserModel.fromJson(jsonDecode(jsonString));
+  }
+
+  @override
+  Future<void> clearUser() async {
+    await secureStorage.delete(key: _userKey);
+  }
+
+  @override
+  Future<void> clearAll() async {
+    await Future.wait([clearToken(), clearUser()]);
+  }
+}
+```
+
+---
+
+## Presentation Layer
+
+### bloc/auth_bloc.dart
+
+```dart
+import 'dart:async';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
+import '../../domain/entities/user.dart';
+import '../../domain/repositories/auth_repository.dart';
+
+part 'auth_event.dart';
+part 'auth_state.dart';
+
+class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  final AuthRepository _repository;
+  StreamSubscription<User?>? _authStateSubscription;
+
+  AuthBloc({required AuthRepository repository})
+      : _repository = repository,
+        super(const AuthState.initial()) {
+    on<AuthCheckRequested>(_onCheckRequested);
+    on<AuthSignInRequested>(_onSignInRequested);
+    on<AuthSignUpRequested>(_onSignUpRequested);
+    on<AuthSignOutRequested>(_onSignOutRequested);
+    on<AuthGoogleSignInRequested>(_onGoogleSignInRequested);
+    on<AuthAppleSignInRequested>(_onAppleSignInRequested);
+    on<AuthForgotPasswordRequested>(_onForgotPasswordRequested);
+    on<_AuthUserChanged>(_onUserChanged);
+
+    // Listen to auth state changes
+    _authStateSubscription = _repository.authStateChanges.listen(
+      (user) => add(_AuthUserChanged(user)),
+    );
+  }
+
+  Future<void> _onCheckRequested(
+    AuthCheckRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading));
+
+    final result = await _repository.getCurrentUser();
+    result.fold(
+      (failure) => emit(state.copyWith(
+        status: AuthStatus.unauthenticated,
+        errorMessage: failure.message,
+      )),
+      (user) => emit(state.copyWith(
+        status: user != null
+            ? AuthStatus.authenticated
+            : AuthStatus.unauthenticated,
+        user: user,
+      )),
+    );
+  }
+
+  Future<void> _onSignInRequested(
+    AuthSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading));
+
+    final result = await _repository.signInWithEmailPassword(
+      email: event.email,
+      password: event.password,
+    );
+
+    result.fold(
+      (failure) => emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: failure.message,
+      )),
+      (user) => emit(state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+      )),
+    );
+  }
+
+  Future<void> _onSignUpRequested(
+    AuthSignUpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading));
+
+    final result = await _repository.signUpWithEmailPassword(
+      email: event.email,
+      password: event.password,
+      displayName: event.displayName,
+    );
+
+    result.fold(
+      (failure) => emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: failure.message,
+      )),
+      (user) => emit(state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+      )),
+    );
+  }
+
+  Future<void> _onSignOutRequested(
+    AuthSignOutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading));
+
+    final result = await _repository.signOut();
+    result.fold(
+      (failure) => emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: failure.message,
+      )),
+      (_) => emit(const AuthState.initial().copyWith(
+        status: AuthStatus.unauthenticated,
+      )),
+    );
+  }
+
+  Future<void> _onGoogleSignInRequested(
+    AuthGoogleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading));
+
+    final result = await _repository.signInWithGoogle();
+    result.fold(
+      (failure) => emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: failure.message,
+      )),
+      (user) => emit(state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+      )),
+    );
+  }
+
+  Future<void> _onAppleSignInRequested(
+    AuthAppleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading));
+
+    final result = await _repository.signInWithApple();
+    result.fold(
+      (failure) => emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: failure.message,
+      )),
+      (user) => emit(state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+      )),
+    );
+  }
+
+  Future<void> _onForgotPasswordRequested(
+    AuthForgotPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading));
+
+    final result = await _repository.sendPasswordResetEmail(event.email);
+    result.fold(
+      (failure) => emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: failure.message,
+      )),
+      (_) => emit(state.copyWith(
+        status: AuthStatus.unauthenticated,
+        successMessage: 'Password reset email sent',
+      )),
+    );
+  }
+
+  void _onUserChanged(_AuthUserChanged event, Emitter<AuthState> emit) {
+    emit(state.copyWith(
+      status: event.user != null
+          ? AuthStatus.authenticated
+          : AuthStatus.unauthenticated,
+      user: event.user,
+    ));
+  }
+
+  @override
+  Future<void> close() {
+    _authStateSubscription?.cancel();
+    return super.close();
+  }
+}
+```
+
+### bloc/auth_event.dart
+
+```dart
+part of 'auth_bloc.dart';
+
+abstract class AuthEvent extends Equatable {
+  const AuthEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class AuthCheckRequested extends AuthEvent {
+  const AuthCheckRequested();
+}
+
+class AuthSignInRequested extends AuthEvent {
+  final String email;
+  final String password;
+
+  const AuthSignInRequested({
+    required this.email,
+    required this.password,
+  });
+
+  @override
+  List<Object?> get props => [email, password];
+}
+
+class AuthSignUpRequested extends AuthEvent {
+  final String email;
+  final String password;
+  final String? displayName;
+
+  const AuthSignUpRequested({
+    required this.email,
+    required this.password,
+    this.displayName,
+  });
+
+  @override
+  List<Object?> get props => [email, password, displayName];
+}
+
+class AuthSignOutRequested extends AuthEvent {
+  const AuthSignOutRequested();
+}
+
+class AuthGoogleSignInRequested extends AuthEvent {
+  const AuthGoogleSignInRequested();
+}
+
+class AuthAppleSignInRequested extends AuthEvent {
+  const AuthAppleSignInRequested();
+}
+
+class AuthForgotPasswordRequested extends AuthEvent {
+  final String email;
+
+  const AuthForgotPasswordRequested({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class _AuthUserChanged extends AuthEvent {
+  final User? user;
+
+  const _AuthUserChanged(this.user);
+
+  @override
+  List<Object?> get props => [user];
+}
+```
+
+### bloc/auth_state.dart
+
+```dart
+part of 'auth_bloc.dart';
+
+enum AuthStatus {
+  initial,
+  loading,
+  authenticated,
+  unauthenticated,
+  error,
+}
+
+class AuthState extends Equatable {
+  final AuthStatus status;
+  final User? user;
+  final String? errorMessage;
+  final String? successMessage;
+
+  const AuthState({
+    this.status = AuthStatus.initial,
+    this.user,
+    this.errorMessage,
+    this.successMessage,
+  });
+
+  const AuthState.initial() : this();
+
+  bool get isAuthenticated => status == AuthStatus.authenticated;
+  bool get isLoading => status == AuthStatus.loading;
+  bool get hasError => status == AuthStatus.error;
+
+  AuthState copyWith({
+    AuthStatus? status,
+    User? user,
+    String? errorMessage,
+    String? successMessage,
+  }) {
+    return AuthState(
+      status: status ?? this.status,
+      user: user ?? this.user,
+      errorMessage: errorMessage,
+      successMessage: successMessage,
+    );
+  }
+
+  @override
+  List<Object?> get props => [status, user, errorMessage, successMessage];
+}
+```
+
+---
+
+## Usage
+
+### Initialization
+
+```dart
+// In injection.dart
+sl.registerLazySingleton<AuthRepository>(
+  () => AuthRepositoryImpl(
+    remoteDataSource: sl(),
+    localDataSource: sl(),
+    networkInfo: sl(),
+  ),
+);
+
+sl.registerFactory(() => AuthBloc(repository: sl()));
+```
+
+### In App
+
+```dart
+BlocProvider(
+  create: (_) => sl<AuthBloc>()..add(const AuthCheckRequested()),
+  child: const App(),
+)
+```
+
+### Protected Routes
+
+```dart
+GoRouter(
+  redirect: (context, state) {
+    final authState = context.read<AuthBloc>().state;
+    final isLoggedIn = authState.isAuthenticated;
+    final isLoggingIn = state.matchedLocation == '/login';
+
+    if (!isLoggedIn && !isLoggingIn) return '/login';
+    if (isLoggedIn && isLoggingIn) return '/';
+    return null;
+  },
+  routes: [...],
+)
+```
