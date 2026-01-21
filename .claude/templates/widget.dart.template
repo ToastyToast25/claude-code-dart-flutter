@@ -1,0 +1,145 @@
+// Widget Template: {{WIDGET_NAME}}
+// Usage: Replace {{WidgetName}}, {{widget_name}} placeholders
+
+import 'package:flutter/material.dart';
+
+/// {{WidgetName}} - Brief description of what this widget does.
+///
+/// Example usage:
+/// ```dart
+/// {{WidgetName}}(
+///   title: 'Hello',
+///   onTap: () => print('tapped'),
+/// )
+/// ```
+class {{WidgetName}} extends StatelessWidget {
+  /// Creates a [{{WidgetName}}].
+  const {{WidgetName}}({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.onTap,
+    this.leading,
+    this.trailing,
+  });
+
+  /// The primary content of the widget.
+  final String title;
+
+  /// Optional secondary content.
+  final String? subtitle;
+
+  /// Called when the widget is tapped.
+  final VoidCallback? onTap;
+
+  /// Widget to display before the title.
+  final Widget? leading;
+
+  /// Widget to display after the title.
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            if (leading != null) ...[
+              leading!,
+              const SizedBox(width: 16),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  if (subtitle != null)
+                    Text(
+                      subtitle!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (trailing != null) ...[
+              const SizedBox(width: 16),
+              trailing!,
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==============================================================
+// Stateful Widget Variant
+// ==============================================================
+
+/// {{WidgetName}}Stateful - Stateful version with internal state.
+class {{WidgetName}}Stateful extends StatefulWidget {
+  const {{WidgetName}}Stateful({
+    super.key,
+    required this.initialValue,
+    this.onChanged,
+  });
+
+  final String initialValue;
+  final ValueChanged<String>? onChanged;
+
+  @override
+  State<{{WidgetName}}Stateful> createState() => _{{WidgetName}}StatefulState();
+}
+
+class _{{WidgetName}}StatefulState extends State<{{WidgetName}}Stateful> {
+  late String _value;
+
+  @override
+  void initState() {
+    super.initState();
+    _value = widget.initialValue;
+  }
+
+  void _updateValue(String newValue) {
+    setState(() {
+      _value = newValue;
+    });
+    widget.onChanged?.call(newValue);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(_value);
+  }
+}
+
+// ==============================================================
+// Riverpod Consumer Widget Variant
+// ==============================================================
+
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+//
+// class {{WidgetName}}Consumer extends ConsumerWidget {
+//   const {{WidgetName}}Consumer({super.key});
+//
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final state = ref.watch({{widget_name}}Provider);
+//
+//     return state.when(
+//       data: (data) => Text(data.toString()),
+//       loading: () => const CircularProgressIndicator(),
+//       error: (error, stack) => Text('Error: $error'),
+//     );
+//   }
+// }

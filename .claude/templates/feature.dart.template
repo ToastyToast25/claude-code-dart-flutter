@@ -1,0 +1,180 @@
+// Feature Template: {{FEATURE_NAME}}
+// Generated for: {{PROJECT_NAME}}
+//
+// Directory Structure:
+// lib/features/{{feature_name}}/
+// ├── data/
+// │   ├── datasources/
+// │   │   ├── {{feature_name}}_local_datasource.dart
+// │   │   └── {{feature_name}}_remote_datasource.dart
+// │   ├── models/
+// │   │   └── {{feature_name}}_model.dart
+// │   └── repositories/
+// │       └── {{feature_name}}_repository_impl.dart
+// ├── domain/
+// │   ├── entities/
+// │   │   └── {{feature_name}}.dart
+// │   ├── repositories/
+// │   │   └── {{feature_name}}_repository.dart
+// │   └── usecases/
+// │       ├── get_{{feature_name}}.dart
+// │       └── create_{{feature_name}}.dart
+// └── presentation/
+//     ├── bloc/
+//     │   ├── {{feature_name}}_bloc.dart
+//     │   ├── {{feature_name}}_event.dart
+//     │   └── {{feature_name}}_state.dart
+//     ├── pages/
+//     │   └── {{feature_name}}_page.dart
+//     └── widgets/
+//         └── {{feature_name}}_widget.dart
+
+// ==============================================================
+// DOMAIN LAYER - Entity
+// ==============================================================
+
+/// {{FEATURE_NAME}} domain entity.
+class {{FeatureName}} {
+  const {{FeatureName}}({
+    required this.id,
+    required this.name,
+    this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final DateTime? createdAt;
+
+  {{FeatureName}} copyWith({
+    String? id,
+    String? name,
+    DateTime? createdAt,
+  }) {
+    return {{FeatureName}}(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+}
+
+// ==============================================================
+// DOMAIN LAYER - Repository Interface
+// ==============================================================
+
+/// Repository interface for {{FEATURE_NAME}} operations.
+abstract class {{FeatureName}}Repository {
+  Future<Result<List<{{FeatureName}}>>> getAll();
+  Future<Result<{{FeatureName}}>> getById(String id);
+  Future<Result<{{FeatureName}}>> create({{FeatureName}} entity);
+  Future<Result<{{FeatureName}}>> update({{FeatureName}} entity);
+  Future<Result<void>> delete(String id);
+}
+
+// ==============================================================
+// DATA LAYER - Model
+// ==============================================================
+
+/// {{FEATURE_NAME}} data model with JSON serialization.
+class {{FeatureName}}Model {
+  const {{FeatureName}}Model({
+    required this.id,
+    required this.name,
+    this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final DateTime? createdAt;
+
+  factory {{FeatureName}}Model.fromJson(Map<String, dynamic> json) {
+    return {{FeatureName}}Model(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'created_at': createdAt?.toIso8601String(),
+    };
+  }
+
+  {{FeatureName}} toEntity() {
+    return {{FeatureName}}(
+      id: id,
+      name: name,
+      createdAt: createdAt,
+    );
+  }
+
+  factory {{FeatureName}}Model.fromEntity({{FeatureName}} entity) {
+    return {{FeatureName}}Model(
+      id: entity.id,
+      name: entity.name,
+      createdAt: entity.createdAt,
+    );
+  }
+}
+
+// ==============================================================
+// PRESENTATION LAYER - BLoC State
+// ==============================================================
+
+/// {{FEATURE_NAME}} BLoC states.
+sealed class {{FeatureName}}State {
+  const {{FeatureName}}State();
+}
+
+final class {{FeatureName}}Initial extends {{FeatureName}}State {
+  const {{FeatureName}}Initial();
+}
+
+final class {{FeatureName}}Loading extends {{FeatureName}}State {
+  const {{FeatureName}}Loading();
+}
+
+final class {{FeatureName}}Loaded extends {{FeatureName}}State {
+  const {{FeatureName}}Loaded(this.items);
+  final List<{{FeatureName}}> items;
+}
+
+final class {{FeatureName}}Error extends {{FeatureName}}State {
+  const {{FeatureName}}Error(this.message);
+  final String message;
+}
+
+// ==============================================================
+// PRESENTATION LAYER - BLoC Events
+// ==============================================================
+
+/// {{FEATURE_NAME}} BLoC events.
+sealed class {{FeatureName}}Event {
+  const {{FeatureName}}Event();
+}
+
+final class {{FeatureName}}Started extends {{FeatureName}}Event {
+  const {{FeatureName}}Started();
+}
+
+final class {{FeatureName}}Refreshed extends {{FeatureName}}Event {
+  const {{FeatureName}}Refreshed();
+}
+
+// ==============================================================
+// Usage Instructions
+// ==============================================================
+
+// 1. Replace all {{FEATURE_NAME}}, {{FeatureName}}, {{feature_name}} placeholders
+// 2. Split this template into separate files per the directory structure above
+// 3. Add repository implementation
+// 4. Add data sources
+// 5. Add BLoC with event handlers
+// 6. Create page and widgets
+// 7. Register providers
+// 8. Add routes

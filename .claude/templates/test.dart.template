@@ -1,0 +1,183 @@
+// Test Template: {{TEST_NAME}}
+// Usage: Replace {{TestName}}, {{test_name}}, {{ClassName}} placeholders
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+// import 'package:bloc_test/bloc_test.dart'; // Uncomment for BLoC tests
+
+// ==============================================================
+// Mocks
+// ==============================================================
+
+class Mock{{Dependency}} extends Mock implements {{Dependency}} {}
+
+class Fake{{Entity}} extends Fake implements {{Entity}} {}
+
+// ==============================================================
+// Test Setup
+// ==============================================================
+
+void main() {
+  late {{ClassName}} sut; // System Under Test
+  late Mock{{Dependency}} mock{{Dependency}};
+
+  setUpAll(() {
+    // Register fallback values for any() matchers
+    registerFallbackValue(Fake{{Entity}}());
+  });
+
+  setUp(() {
+    mock{{Dependency}} = Mock{{Dependency}}();
+    sut = {{ClassName}}(mock{{Dependency}});
+  });
+
+  tearDown(() {
+    // Clean up if needed
+  });
+
+  // ==============================================================
+  // Unit Tests
+  // ==============================================================
+
+  group('{{ClassName}}', () {
+    group('constructor', () {
+      test('creates instance successfully', () {
+        expect(sut, isA<{{ClassName}}>());
+      });
+    });
+
+    group('methodName', () {
+      test('returns expected result when condition is met', () async {
+        // Arrange
+        const expected = 'expected value';
+        when(() => mock{{Dependency}}.someMethod(any()))
+            .thenAnswer((_) async => expected);
+
+        // Act
+        final result = await sut.methodName('input');
+
+        // Assert
+        expect(result, equals(expected));
+        verify(() => mock{{Dependency}}.someMethod('input')).called(1);
+      });
+
+      test('throws exception when condition fails', () async {
+        // Arrange
+        when(() => mock{{Dependency}}.someMethod(any()))
+            .thenThrow(Exception('error'));
+
+        // Act & Assert
+        expect(
+          () => sut.methodName('input'),
+          throwsA(isA<Exception>()),
+        );
+      });
+    });
+  });
+
+  // ==============================================================
+  // BLoC Tests (uncomment if testing BLoC)
+  // ==============================================================
+
+  // group('{{ClassName}}Bloc', () {
+  //   blocTest<{{ClassName}}Bloc, {{ClassName}}State>(
+  //     'emits [Loading, Loaded] when Started is added',
+  //     build: () {
+  //       when(() => mock{{Dependency}}.getAll())
+  //           .thenAnswer((_) async => Right([test{{Entity}}]));
+  //       return {{ClassName}}Bloc(mock{{Dependency}});
+  //     },
+  //     act: (bloc) => bloc.add(const {{ClassName}}Started()),
+  //     expect: () => [
+  //       const {{ClassName}}Loading(),
+  //       {{ClassName}}Loaded([test{{Entity}}]),
+  //     ],
+  //     verify: (_) {
+  //       verify(() => mock{{Dependency}}.getAll()).called(1);
+  //     },
+  //   );
+  //
+  //   blocTest<{{ClassName}}Bloc, {{ClassName}}State>(
+  //     'emits [Loading, Error] when getAll fails',
+  //     build: () {
+  //       when(() => mock{{Dependency}}.getAll())
+  //           .thenAnswer((_) async => Left(ServerFailure('Error')));
+  //       return {{ClassName}}Bloc(mock{{Dependency}});
+  //     },
+  //     act: (bloc) => bloc.add(const {{ClassName}}Started()),
+  //     expect: () => [
+  //       const {{ClassName}}Loading(),
+  //       const {{ClassName}}Error('Error'),
+  //     ],
+  //   );
+  // });
+
+  // ==============================================================
+  // Widget Tests (uncomment if testing widgets)
+  // ==============================================================
+
+  // group('{{ClassName}}Widget', () {
+  //   testWidgets('renders correctly with given data', (tester) async {
+  //     // Arrange
+  //     await tester.pumpWidget(
+  //       MaterialApp(
+  //         home: {{ClassName}}Widget(
+  //           title: 'Test Title',
+  //         ),
+  //       ),
+  //     );
+  //
+  //     // Assert
+  //     expect(find.text('Test Title'), findsOneWidget);
+  //   });
+  //
+  //   testWidgets('calls onTap when pressed', (tester) async {
+  //     // Arrange
+  //     var tapped = false;
+  //     await tester.pumpWidget(
+  //       MaterialApp(
+  //         home: {{ClassName}}Widget(
+  //           title: 'Test',
+  //           onTap: () => tapped = true,
+  //         ),
+  //       ),
+  //     );
+  //
+  //     // Act
+  //     await tester.tap(find.byType({{ClassName}}Widget));
+  //     await tester.pump();
+  //
+  //     // Assert
+  //     expect(tapped, isTrue);
+  //   });
+  // });
+
+  // ==============================================================
+  // Golden Tests (uncomment if doing golden tests)
+  // ==============================================================
+
+  // group('Golden Tests', () {
+  //   testWidgets('matches golden file', (tester) async {
+  //     await tester.pumpWidget(
+  //       MaterialApp(
+  //         home: {{ClassName}}Widget(title: 'Golden Test'),
+  //       ),
+  //     );
+  //
+  //     await expectLater(
+  //       find.byType({{ClassName}}Widget),
+  //       matchesGoldenFile('goldens/{{test_name}}.png'),
+  //     );
+  //   });
+  // });
+}
+
+// ==============================================================
+// Test Fixtures
+// ==============================================================
+
+// final test{{Entity}} = {{Entity}}(
+//   id: 'test-id',
+//   name: 'Test Name',
+//   createdAt: DateTime(2024, 1, 1),
+// );

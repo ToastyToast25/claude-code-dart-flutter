@@ -1,0 +1,261 @@
+# Dart/Flutter .gitignore
+# Auto-maintained by Claude - do not manually edit generated sections
+
+# =============================================================================
+# DART & FLUTTER
+# =============================================================================
+
+# Dart dependencies
+.dart_tool/
+.packages
+pubspec.lock
+
+# Flutter specific
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+
+# Build outputs
+build/
+*.class
+*.jar
+*.log
+
+# =============================================================================
+# IDE & EDITORS
+# =============================================================================
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IntelliJ / Android Studio
+.idea/
+*.ipr
+*.iws
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Vim
+*.swp
+*.swo
+*~
+
+# =============================================================================
+# OPERATING SYSTEMS
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.directory
+
+# =============================================================================
+# ENVIRONMENT & SECRETS
+# =============================================================================
+
+# Environment files
+.env
+.env.*
+!.env.example
+*.env.local
+
+# Secrets & credentials
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+credentials.json
+secrets.json
+service-account*.json
+google-services.json
+GoogleService-Info.plist
+
+# API keys
+api_keys.dart
+api_keys.json
+
+# =============================================================================
+# PLATFORM SPECIFIC
+# =============================================================================
+
+# Android
+android/.gradle/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/**/GeneratedPluginRegistrant.*
+android/key.properties
+*.apk
+*.aab
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/app.flx
+ios/Flutter/app.zip
+ios/Flutter/flutter_assets/
+ios/Flutter/flutter_export_environment.sh
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Web
+web/.dart_tool/
+
+# =============================================================================
+# TESTING & COVERAGE
+# =============================================================================
+
+# Test outputs
+coverage/
+*.lcov
+test-results/
+.test_coverage/
+
+# Screenshots from tests
+test/**/failures/
+
+# =============================================================================
+# CODE GENERATION
+# =============================================================================
+
+# Generated files (uncomment if you don't commit generated code)
+# *.g.dart
+# *.freezed.dart
+# *.gr.dart
+# *.config.dart
+# *.mocks.dart
+
+# Build runner
+.build/
+
+# =============================================================================
+# DEPENDENCIES & PACKAGES
+# =============================================================================
+
+# Node.js (for tooling)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Ruby (for fastlane)
+vendor/bundle/
+.bundle/
+
+# =============================================================================
+# DATABASES
+# =============================================================================
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# Prisma
+prisma/migrations/**/migration_lock.toml
+
+# =============================================================================
+# LOGS & TEMPORARY FILES
+# =============================================================================
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Cache
+.cache/
+*.cache
+
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+
+# Generated docs
+doc/api/
+.doc/
+
+# =============================================================================
+# CI/CD & DEPLOYMENT
+# =============================================================================
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Firebase
+.firebase/
+firebase-debug.log
+.firebaserc
+
+# =============================================================================
+# MISCELLANEOUS
+# =============================================================================
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Compiled files
+*.exe
+*.dll
+*.so
+*.dylib
+
+# =============================================================================
+# CLAUDE CODE
+# =============================================================================
+
+# Session files (keep structure, ignore actual sessions)
+.claude/memory/sessions/*.md
+!.claude/memory/sessions/README.md
+
+# Learned repo analysis (may contain sensitive info)
+.claude/learnings/repos/*.md
+!.claude/learnings/repos/README.md
+
+# =============================================================================
+# PROJECT SPECIFIC (add your custom ignores below)
+# =============================================================================
+

@@ -1,0 +1,299 @@
+// Repository Template: {{REPOSITORY_NAME}}
+// Usage: Replace {{RepositoryName}}, {{repository_name}}, {{Entity}} placeholders
+
+import 'package:fpdart/fpdart.dart';
+
+// ==============================================================
+// DOMAIN LAYER - Repository Interface
+// ==============================================================
+
+/// Abstract repository interface for {{Entity}} operations.
+///
+/// This defines the contract that the data layer must implement.
+abstract class {{RepositoryName}}Repository {
+  /// Get all {{entity}}s with optional pagination.
+  Future<Either<Failure, List<{{Entity}}>>> getAll({
+    int? page,
+    int? limit,
+  });
+
+  /// Get a single {{entity}} by ID.
+  Future<Either<Failure, {{Entity}}>> getById(String id);
+
+  /// Create a new {{entity}}.
+  Future<Either<Failure, {{Entity}}>> create({{Entity}} entity);
+
+  /// Update an existing {{entity}}.
+  Future<Either<Failure, {{Entity}}>> update({{Entity}} entity);
+
+  /// Delete a {{entity}} by ID.
+  Future<Either<Failure, void>> delete(String id);
+
+  /// Search {{entity}}s by query.
+  Future<Either<Failure, List<{{Entity}}>>> search(String query);
+
+  /// Watch {{entity}}s stream for real-time updates.
+  Stream<Either<Failure, List<{{Entity}}>>> watchAll();
+}
+
+// ==============================================================
+// DATA LAYER - Repository Implementation
+// ==============================================================
+
+/// Implementation of [{{RepositoryName}}Repository].
+///
+/// Coordinates between remote and local data sources.
+class {{RepositoryName}}RepositoryImpl implements {{RepositoryName}}Repository {
+  {{RepositoryName}}RepositoryImpl({
+    required {{RepositoryName}}RemoteDataSource remoteDataSource,
+    required {{RepositoryName}}LocalDataSource localDataSource,
+    required NetworkInfo networkInfo,
+  })  : _remoteDataSource = remoteDataSource,
+        _localDataSource = localDataSource,
+        _networkInfo = networkInfo;
+
+  final {{RepositoryName}}RemoteDataSource _remoteDataSource;
+  final {{RepositoryName}}LocalDataSource _localDataSource;
+  final NetworkInfo _networkInfo;
+
+  @override
+  Future<Either<Failure, List<{{Entity}}>>> getAll({
+    int? page,
+    int? limit,
+  }) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final models = await _remoteDataSource.getAll(
+          page: page,
+          limit: limit,
+        );
+        await _localDataSource.cacheAll(models);
+        return Right(models.map((m) => m.toEntity()).toList());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      }
+    } else {
+      try {
+        final models = await _localDataSource.getAll();
+        return Right(models.map((m) => m.toEntity()).toList());
+      } on CacheException catch (e) {
+        return Left(CacheFailure(e.message));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, {{Entity}}>> getById(String id) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final model = await _remoteDataSource.getById(id);
+        await _localDataSource.cache(model);
+        return Right(model.toEntity());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } on NotFoundException {
+        return Left(NotFoundFailure('{{Entity}} not found'));
+      }
+    } else {
+      try {
+        final model = await _localDataSource.getById(id);
+        return Right(model.toEntity());
+      } on CacheException catch (e) {
+        return Left(CacheFailure(e.message));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, {{Entity}}>> create({{Entity}} entity) async {
+    try {
+      final model = {{Entity}}Model.fromEntity(entity);
+      final created = await _remoteDataSource.create(model);
+      await _localDataSource.cache(created);
+      return Right(created.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, {{Entity}}>> update({{Entity}} entity) async {
+    try {
+      final model = {{Entity}}Model.fromEntity(entity);
+      final updated = await _remoteDataSource.update(model);
+      await _localDataSource.cache(updated);
+      return Right(updated.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NotFoundException {
+      return Left(NotFoundFailure('{{Entity}} not found'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> delete(String id) async {
+    try {
+      await _remoteDataSource.delete(id);
+      await _localDataSource.delete(id);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NotFoundException {
+      return Left(NotFoundFailure('{{Entity}} not found'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<{{Entity}}>>> search(String query) async {
+    try {
+      final models = await _remoteDataSource.search(query);
+      return Right(models.map((m) => m.toEntity()).toList());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Stream<Either<Failure, List<{{Entity}}>>> watchAll() {
+    return _localDataSource.watchAll().map(
+      (models) => Right(models.map((m) => m.toEntity()).toList()),
+    ).handleError(
+      (error) => Left(CacheFailure(error.toString())),
+    );
+  }
+}
+
+// ==============================================================
+// DATA SOURCES
+// ==============================================================
+
+/// Remote data source interface for {{Entity}}.
+abstract class {{RepositoryName}}RemoteDataSource {
+  Future<List<{{Entity}}Model>> getAll({int? page, int? limit});
+  Future<{{Entity}}Model> getById(String id);
+  Future<{{Entity}}Model> create({{Entity}}Model model);
+  Future<{{Entity}}Model> update({{Entity}}Model model);
+  Future<void> delete(String id);
+  Future<List<{{Entity}}Model>> search(String query);
+}
+
+/// Local data source interface for {{Entity}}.
+abstract class {{RepositoryName}}LocalDataSource {
+  Future<List<{{Entity}}Model>> getAll();
+  Future<{{Entity}}Model> getById(String id);
+  Future<void> cache({{Entity}}Model model);
+  Future<void> cacheAll(List<{{Entity}}Model> models);
+  Future<void> delete(String id);
+  Future<void> clear();
+  Stream<List<{{Entity}}Model>> watchAll();
+}
+
+// ==============================================================
+// Remote Data Source Implementation
+// ==============================================================
+
+class {{RepositoryName}}RemoteDataSourceImpl implements {{RepositoryName}}RemoteDataSource {
+  {{RepositoryName}}RemoteDataSourceImpl(this._client);
+
+  final ApiClient _client;
+  static const _endpoint = '/api/v1/{{endpoint}}';
+
+  @override
+  Future<List<{{Entity}}Model>> getAll({int? page, int? limit}) async {
+    final response = await _client.get(
+      _endpoint,
+      queryParameters: {
+        if (page != null) 'page': page.toString(),
+        if (limit != null) 'limit': limit.toString(),
+      },
+    );
+    final list = response['data'] as List;
+    return list.map((json) => {{Entity}}Model.fromJson(json)).toList();
+  }
+
+  @override
+  Future<{{Entity}}Model> getById(String id) async {
+    final response = await _client.get('$_endpoint/$id');
+    return {{Entity}}Model.fromJson(response);
+  }
+
+  @override
+  Future<{{Entity}}Model> create({{Entity}}Model model) async {
+    final response = await _client.post(_endpoint, body: model.toJson());
+    return {{Entity}}Model.fromJson(response);
+  }
+
+  @override
+  Future<{{Entity}}Model> update({{Entity}}Model model) async {
+    final response = await _client.put(
+      '$_endpoint/${model.id}',
+      body: model.toJson(),
+    );
+    return {{Entity}}Model.fromJson(response);
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    await _client.delete('$_endpoint/$id');
+  }
+
+  @override
+  Future<List<{{Entity}}Model>> search(String query) async {
+    final response = await _client.get(
+      '$_endpoint/search',
+      queryParameters: {'q': query},
+    );
+    final list = response['data'] as List;
+    return list.map((json) => {{Entity}}Model.fromJson(json)).toList();
+  }
+}
+
+// ==============================================================
+// Local Data Source Implementation (Hive example)
+// ==============================================================
+
+// class {{RepositoryName}}LocalDataSourceImpl implements {{RepositoryName}}LocalDataSource {
+//   {{RepositoryName}}LocalDataSourceImpl(this._box);
+//
+//   final Box<{{Entity}}Model> _box;
+//
+//   @override
+//   Future<List<{{Entity}}Model>> getAll() async {
+//     return _box.values.toList();
+//   }
+//
+//   @override
+//   Future<{{Entity}}Model> getById(String id) async {
+//     final model = _box.get(id);
+//     if (model == null) throw CacheException('Not found in cache');
+//     return model;
+//   }
+//
+//   @override
+//   Future<void> cache({{Entity}}Model model) async {
+//     await _box.put(model.id, model);
+//   }
+//
+//   @override
+//   Future<void> cacheAll(List<{{Entity}}Model> models) async {
+//     final map = {for (final m in models) m.id: m};
+//     await _box.putAll(map);
+//   }
+//
+//   @override
+//   Future<void> delete(String id) async {
+//     await _box.delete(id);
+//   }
+//
+//   @override
+//   Future<void> clear() async {
+//     await _box.clear();
+//   }
+//
+//   @override
+//   Stream<List<{{Entity}}Model>> watchAll() {
+//     return _box.watch().map((_) => _box.values.toList());
+//   }
+// }

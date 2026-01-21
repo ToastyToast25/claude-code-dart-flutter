@@ -1,0 +1,221 @@
+// BLoC Template: {{BLOC_NAME}}
+// Usage: Replace {{BlocName}}, {{bloc_name}}, {{Entity}} placeholders
+
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+
+part '{{bloc_name}}_event.dart';
+part '{{bloc_name}}_state.dart';
+
+/// BLoC for managing {{BlocName}} state.
+class {{BlocName}}Bloc extends Bloc<{{BlocName}}Event, {{BlocName}}State> {
+  {{BlocName}}Bloc(this._repository) : super(const {{BlocName}}Initial()) {
+    on<{{BlocName}}Started>(_onStarted);
+    on<{{BlocName}}Refreshed>(_onRefreshed);
+    on<{{BlocName}}ItemSelected>(_onItemSelected);
+    on<{{BlocName}}ItemCreated>(_onItemCreated);
+    on<{{BlocName}}ItemUpdated>(_onItemUpdated);
+    on<{{BlocName}}ItemDeleted>(_onItemDeleted);
+  }
+
+  final {{Entity}}Repository _repository;
+
+  Future<void> _onStarted(
+    {{BlocName}}Started event,
+    Emitter<{{BlocName}}State> emit,
+  ) async {
+    emit(const {{BlocName}}Loading());
+
+    final result = await _repository.getAll();
+
+    result.fold(
+      (failure) => emit({{BlocName}}Error(failure.message)),
+      (items) => emit({{BlocName}}Loaded(items)),
+    );
+  }
+
+  Future<void> _onRefreshed(
+    {{BlocName}}Refreshed event,
+    Emitter<{{BlocName}}State> emit,
+  ) async {
+    final currentState = state;
+
+    final result = await _repository.getAll();
+
+    result.fold(
+      (failure) => emit({{BlocName}}Error(failure.message)),
+      (items) => emit({{BlocName}}Loaded(items)),
+    );
+  }
+
+  Future<void> _onItemSelected(
+    {{BlocName}}ItemSelected event,
+    Emitter<{{BlocName}}State> emit,
+  ) async {
+    emit(const {{BlocName}}Loading());
+
+    final result = await _repository.getById(event.id);
+
+    result.fold(
+      (failure) => emit({{BlocName}}Error(failure.message)),
+      (item) => emit({{BlocName}}ItemLoaded(item)),
+    );
+  }
+
+  Future<void> _onItemCreated(
+    {{BlocName}}ItemCreated event,
+    Emitter<{{BlocName}}State> emit,
+  ) async {
+    emit(const {{BlocName}}Loading());
+
+    final result = await _repository.create(event.item);
+
+    result.fold(
+      (failure) => emit({{BlocName}}Error(failure.message)),
+      (item) {
+        emit(const {{BlocName}}OperationSuccess('Created successfully'));
+        add(const {{BlocName}}Refreshed());
+      },
+    );
+  }
+
+  Future<void> _onItemUpdated(
+    {{BlocName}}ItemUpdated event,
+    Emitter<{{BlocName}}State> emit,
+  ) async {
+    emit(const {{BlocName}}Loading());
+
+    final result = await _repository.update(event.item);
+
+    result.fold(
+      (failure) => emit({{BlocName}}Error(failure.message)),
+      (item) {
+        emit(const {{BlocName}}OperationSuccess('Updated successfully'));
+        add(const {{BlocName}}Refreshed());
+      },
+    );
+  }
+
+  Future<void> _onItemDeleted(
+    {{BlocName}}ItemDeleted event,
+    Emitter<{{BlocName}}State> emit,
+  ) async {
+    emit(const {{BlocName}}Loading());
+
+    final result = await _repository.delete(event.id);
+
+    result.fold(
+      (failure) => emit({{BlocName}}Error(failure.message)),
+      (_) {
+        emit(const {{BlocName}}OperationSuccess('Deleted successfully'));
+        add(const {{BlocName}}Refreshed());
+      },
+    );
+  }
+}
+
+// ==============================================================
+// {{bloc_name}}_event.dart
+// ==============================================================
+
+// part of '{{bloc_name}}_bloc.dart';
+
+sealed class {{BlocName}}Event extends Equatable {
+  const {{BlocName}}Event();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class {{BlocName}}Started extends {{BlocName}}Event {
+  const {{BlocName}}Started();
+}
+
+final class {{BlocName}}Refreshed extends {{BlocName}}Event {
+  const {{BlocName}}Refreshed();
+}
+
+final class {{BlocName}}ItemSelected extends {{BlocName}}Event {
+  const {{BlocName}}ItemSelected(this.id);
+  final String id;
+
+  @override
+  List<Object?> get props => [id];
+}
+
+final class {{BlocName}}ItemCreated extends {{BlocName}}Event {
+  const {{BlocName}}ItemCreated(this.item);
+  final {{Entity}} item;
+
+  @override
+  List<Object?> get props => [item];
+}
+
+final class {{BlocName}}ItemUpdated extends {{BlocName}}Event {
+  const {{BlocName}}ItemUpdated(this.item);
+  final {{Entity}} item;
+
+  @override
+  List<Object?> get props => [item];
+}
+
+final class {{BlocName}}ItemDeleted extends {{BlocName}}Event {
+  const {{BlocName}}ItemDeleted(this.id);
+  final String id;
+
+  @override
+  List<Object?> get props => [id];
+}
+
+// ==============================================================
+// {{bloc_name}}_state.dart
+// ==============================================================
+
+// part of '{{bloc_name}}_bloc.dart';
+
+sealed class {{BlocName}}State extends Equatable {
+  const {{BlocName}}State();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class {{BlocName}}Initial extends {{BlocName}}State {
+  const {{BlocName}}Initial();
+}
+
+final class {{BlocName}}Loading extends {{BlocName}}State {
+  const {{BlocName}}Loading();
+}
+
+final class {{BlocName}}Loaded extends {{BlocName}}State {
+  const {{BlocName}}Loaded(this.items);
+  final List<{{Entity}}> items;
+
+  @override
+  List<Object?> get props => [items];
+}
+
+final class {{BlocName}}ItemLoaded extends {{BlocName}}State {
+  const {{BlocName}}ItemLoaded(this.item);
+  final {{Entity}} item;
+
+  @override
+  List<Object?> get props => [item];
+}
+
+final class {{BlocName}}OperationSuccess extends {{BlocName}}State {
+  const {{BlocName}}OperationSuccess(this.message);
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
+}
+
+final class {{BlocName}}Error extends {{BlocName}}State {
+  const {{BlocName}}Error(this.message);
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
+}

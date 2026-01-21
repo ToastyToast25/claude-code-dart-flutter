@@ -1,0 +1,89 @@
+{
+  "context": {
+    "autoLoad": [
+      ".claude/registry.md",
+      ".claude/QUICKSTART.md",
+      "CLAUDE.md"
+    ],
+    "onFileMatch": {
+      "lib/**/bloc/*.dart": [".claude/skills/create-bloc.md"],
+      "lib/**/models/*.dart": [".claude/skills/create-model.md"],
+      "lib/**/pages/*.dart": [".claude/skills/create-page.md"],
+      "lib/**/widgets/*.dart": [".claude/skills/create-widget.md"],
+      "lib/**/providers/*.dart": [".claude/skills/create-provider.md"],
+      "lib/**/repositories/*.dart": [".claude/skills/create-repository.md"],
+      "lib/**/validators/*.dart": [".claude/skills/create-validator.md"],
+      "test/**/*.dart": [".claude/skills/create-test.md"],
+      "pubspec.yaml": [".claude/skills/add-package.md"],
+      "CHANGELOG.md": [".claude/skills/versioning.md"],
+      "backend/**/*.dart": [".claude/skills/create-api-endpoint.md", ".claude/skills/input-security.md"],
+      "routes/**/*.dart": [".claude/skills/create-api-endpoint.md", ".claude/skills/input-security.md"]
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "tool == 'Edit' && tool_input.file_path matches '\\.(env|env\\..*)$'",
+        "command": ["python", ".claude/hooks/block-secrets.py"],
+        "description": "Block editing .env files"
+      },
+      {
+        "matcher": "tool == 'Edit' && tool_input.file_path matches '(secrets|credentials)\\.'",
+        "command": ["python", ".claude/hooks/block-secrets.py"],
+        "description": "Block editing secrets/credentials files"
+      },
+      {
+        "matcher": "tool == 'Write' && tool_input.file_path matches '\\.(env|env\\..*)$'",
+        "command": ["python", ".claude/hooks/block-secrets.py"],
+        "description": "Block writing .env files"
+      },
+      {
+        "matcher": "tool == 'Bash' && tool_input.command matches '(rm -rf /|rm -rf ~|git push.*--force.*main|git push.*--force.*master|DROP DATABASE|DROP TABLE)'",
+        "command": ["python", ".claude/hooks/block-dangerous.py"],
+        "description": "Block dangerous commands"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "tool == 'Edit' && tool_input.file_path matches '\\.dart$'",
+        "command": ["python", ".claude/hooks/format-dart.py"],
+        "description": "Auto-format Dart files after edit"
+      },
+      {
+        "matcher": "(tool == 'Edit' || tool == 'Write') && tool_input.file_path matches '\\.dart$'",
+        "command": ["python", ".claude/hooks/quality-check.py"],
+        "description": "Check code quality rules"
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "true",
+        "command": ["python", ".claude/hooks/session-end.py"],
+        "description": "Record session learnings on stop"
+      }
+    ]
+  },
+  "permissions": {
+    "allowedTools": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(flutter:*)",
+      "Bash(dart:*)",
+      "Bash(git:status)",
+      "Bash(git:diff)",
+      "Bash(git:log)",
+      "Bash(git:branch)",
+      "Bash(ls:*)",
+      "Bash(pwd)"
+    ],
+    "deniedTools": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)"
+    ]
+  },
+  "environment": {
+    "FLUTTER_ROOT": "${FLUTTER_ROOT:-}",
+    "DART_SDK": "${DART_SDK:-}"
+  }
+}
