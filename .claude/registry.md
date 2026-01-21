@@ -964,6 +964,7 @@ If multiple agents could apply, use this priority:
 | Project Maintenance | `skills/project-maintenance.md` | maintain project, update registry, sync files, project config |
 | Package Presets | `skills/package-presets.md` | package presets, dependencies, minimal, standard, enterprise |
 | Xtream/Stalker API | `skills/xtream-stalker-api.md` | xtream code, stalker portal, iptv, live tv, streaming api, m3u, epg |
+| Streaming Advanced | `skills/streaming-advanced.md` | watch history, resume playback, downloads, parental controls, epg ui, tv navigation, firestick |
 
 ---
 
@@ -1255,7 +1256,7 @@ Future<Either<Failure, User>> signIn(String email, String password);
 | Category | Count |
 |----------|-------|
 | Total Agents | 35 |
-| Total Skills | 32 |
+| Total Skills | 33 |
 | Templates | 11 |
 | Commands | 7 |
 | Hooks | 10 |
@@ -1282,7 +1283,7 @@ Future<Either<Failure, User>> signIn(String email, String password);
 │   ├── learning-system.md
 │   ├── agent-testing.md
 │   └── ... (28 more)
-├── skills/                  # Skill definitions (32 skills)
+├── skills/                  # Skill definitions (33 skills)
 │   ├── create-feature.md
 │   ├── create-widget.md
 │   ├── versioning.md
@@ -1290,6 +1291,7 @@ Future<Either<Failure, User>> signIn(String email, String password);
 │   ├── project-maintenance.md
 │   ├── package-presets.md
 │   ├── xtream-stalker-api.md # IPTV streaming API integration
+│   ├── streaming-advanced.md # Watch history, downloads, parental controls, TV nav
 │   └── ... (25 more)
 ├── docs/                    # Reference documentation (3 docs)
 │   ├── effective-dart.md    # Dart style guide

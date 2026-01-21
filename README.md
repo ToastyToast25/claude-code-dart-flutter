@@ -21,7 +21,7 @@ claude
 | Component | Count | Description |
 |-----------|-------|-------------|
 | **Agents** | 35 | Specialized assistants for different tasks |
-| **Skills** | 32 | Reusable code patterns with auto-activation |
+| **Skills** | 33 | Reusable code patterns with auto-activation |
 | **Templates** | 11 | Boilerplate for features, BLoCs, pages, etc. |
 | **Commands** | 7 | Slash commands for common workflows |
 | **Hooks** | 10 | Enforcement scripts for code quality |
@@ -89,14 +89,15 @@ Skills automatically activate when you work on matching files:
 │   ├── debugging.md
 │   ├── security-audit.md
 │   └── ... (30 more)
-├── skills/              # 32 reusable skills
+├── skills/              # 33 reusable skills
 │   ├── create-bloc.md
 │   ├── create-widget.md
 │   ├── create-test.md
 │   ├── input-security.md
 │   ├── project-maintenance.md
 │   ├── xtream-stalker-api.md  # IPTV API integration
-│   └── ... (26 more)
+│   ├── streaming-advanced.md  # Watch history, downloads, TV nav
+│   └── ... (25 more)
 ├── commands/            # 7 slash commands
 │   ├── new.md
 │   ├── test.md

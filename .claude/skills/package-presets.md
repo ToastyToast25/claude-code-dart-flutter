@@ -394,11 +394,16 @@ Netflix/Jellyfin-style streaming app with IPTV integration.
 dependencies:
   # ... include Standard preset ...
 
-  # Video Player
+  # Video Player - Mobile/Web
   video_player: ^2.8.2
   chewie: ^1.7.4
   better_player: ^0.0.84
   wakelock_plus: ^1.1.4        # Keep screen on
+
+  # Video Player - Desktop/TV (high performance)
+  media_kit: ^1.2.0            # Native player for desktop/TV
+  media_kit_video: ^1.2.0
+  media_kit_libs_video: ^1.0.4
 
   # UI - Media Focused
   carousel_slider: ^4.2.1
@@ -409,6 +414,12 @@ dependencies:
   # Offline/Caching
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  dio_cache_interceptor: ^3.5.0
+
+  # Downloads
+  flutter_downloader: ^1.11.6
+  path_provider: ^2.1.2
+  workmanager: ^0.5.2
 
   # Device Info
   device_info_plus: ^9.1.1
@@ -417,6 +428,9 @@ dependencies:
   # Sharing
   share_plus: ^7.2.1
   url_launcher: ^6.2.2
+
+  # Security
+  crypto: ^3.0.3              # PIN hashing for parental controls
 
   # Platform specific
   android_intent_plus: ^4.0.3  # Firestick deep links
@@ -432,13 +446,29 @@ dev_dependencies:
 **Features supported**:
 - Xtream Code API integration
 - Stalker Portal API integration
+- M3U playlist parsing
 - Live TV with EPG
 - VOD (Movies)
 - Series with seasons/episodes
+- Watch history with resume playback
+- Offline downloads
+- Parental controls with PIN
+- Multi-server support
+- Quality selection
+- Subtitle/audio track selection
 - Multi-platform (Web, Android, iOS, Firestick, Docker)
+
+**Platform Player Recommendations**:
+| Platform | Recommended Player |
+|----------|-------------------|
+| Android/iOS | `video_player` + `chewie` or `better_player` |
+| Web | `video_player` (HLS support via hls.js) |
+| Desktop (Windows/Linux/macOS) | `media_kit` |
+| Android TV/Firestick | `media_kit` or `better_player` |
 
 **See also**:
 - `.claude/skills/xtream-stalker-api.md` - API integration details
+- `.claude/skills/streaming-advanced.md` - Downloads, watch history, parental controls, TV navigation
 - `.claude/templates/streaming-app.template` - Full project structure
 - `.claude/agents/repo-analyzer.md` - Analyze reference repos (Jellyflix, Jellyfin)
 
@@ -447,8 +477,11 @@ dev_dependencies:
 ### Quick Commands - Streaming Preset
 
 ```bash
-# Add streaming dependencies
-flutter pub add video_player chewie better_player wakelock_plus carousel_slider smooth_page_indicator responsive_framework flutter_screenutil hive hive_flutter device_info_plus package_info_plus share_plus url_launcher android_intent_plus
+# Add streaming dependencies (mobile/web)
+flutter pub add video_player chewie better_player wakelock_plus carousel_slider smooth_page_indicator responsive_framework flutter_screenutil hive hive_flutter dio_cache_interceptor flutter_downloader path_provider workmanager device_info_plus package_info_plus share_plus url_launcher crypto android_intent_plus
+
+# Add desktop/TV player (optional)
+flutter pub add media_kit media_kit_video media_kit_libs_video
 
 # Add dev dependencies
 flutter pub add --dev hive_generator network_image_mock
