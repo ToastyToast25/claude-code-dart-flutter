@@ -1,0 +1,686 @@
+# Streaming App Project Template
+
+Complete project scaffold for Netflix/Jellyfin-style streaming application with Xtream Code and Stalker API integration.
+
+## Project Structure
+
+```
+streaming_app/
+├── lib/
+│   ├── main.dart
+│   ├── app/
+│   │   ├── app.dart
+│   │   ├── router/
+│   │   │   ├── app_router.dart
+│   │   │   └── routes.dart
+│   │   └── theme/
+│   │       ├── app_theme.dart
+│   │       ├── colors.dart
+│   │       └── typography.dart
+│   │
+│   ├── core/
+│   │   ├── constants/
+│   │   │   ├── api_constants.dart
+│   │   │   ├── storage_keys.dart
+│   │   │   └── ui_constants.dart
+│   │   ├── errors/
+│   │   │   ├── failures.dart
+│   │   │   └── exceptions.dart
+│   │   ├── extensions/
+│   │   │   ├── context_extensions.dart
+│   │   │   ├── string_extensions.dart
+│   │   │   └── duration_extensions.dart
+│   │   ├── network/
+│   │   │   ├── dio_client.dart
+│   │   │   ├── network_info.dart
+│   │   │   └── interceptors/
+│   │   │       ├── auth_interceptor.dart
+│   │   │       ├── logging_interceptor.dart
+│   │   │       └── error_interceptor.dart
+│   │   └── utils/
+│   │       ├── validators.dart
+│   │       ├── formatters.dart
+│   │       └── platform_utils.dart
+│   │
+│   ├── features/
+│   │   ├── auth/
+│   │   │   ├── data/
+│   │   │   │   ├── datasources/
+│   │   │   │   │   ├── auth_local_datasource.dart
+│   │   │   │   │   └── auth_remote_datasource.dart
+│   │   │   │   ├── models/
+│   │   │   │   │   └── user_model.dart
+│   │   │   │   └── repositories/
+│   │   │   │       └── auth_repository_impl.dart
+│   │   │   ├── domain/
+│   │   │   │   ├── entities/
+│   │   │   │   │   └── user.dart
+│   │   │   │   ├── repositories/
+│   │   │   │   │   └── auth_repository.dart
+│   │   │   │   └── usecases/
+│   │   │   │       ├── login_usecase.dart
+│   │   │   │       ├── register_usecase.dart
+│   │   │   │       └── logout_usecase.dart
+│   │   │   └── presentation/
+│   │   │       ├── providers/
+│   │   │       │   └── auth_provider.dart
+│   │   │       ├── pages/
+│   │   │       │   ├── login_page.dart
+│   │   │       │   ├── register_page.dart
+│   │   │       │   └── forgot_password_page.dart
+│   │   │       └── widgets/
+│   │   │           ├── auth_form.dart
+│   │   │           └── social_login_buttons.dart
+│   │   │
+│   │   ├── onboarding/
+│   │   │   └── presentation/
+│   │   │       ├── pages/
+│   │   │       │   ├── welcome_page.dart
+│   │   │       │   ├── provider_setup_page.dart
+│   │   │       │   └── provider_test_page.dart
+│   │   │       └── widgets/
+│   │   │           ├── provider_type_selector.dart
+│   │   │           └── credentials_form.dart
+│   │   │
+│   │   ├── iptv_provider/
+│   │   │   ├── data/
+│   │   │   │   ├── datasources/
+│   │   │   │   │   ├── xtream_datasource.dart
+│   │   │   │   │   └── stalker_datasource.dart
+│   │   │   │   ├── models/
+│   │   │   │   │   ├── xtream_credentials_model.dart
+│   │   │   │   │   ├── stalker_credentials_model.dart
+│   │   │   │   │   └── provider_info_model.dart
+│   │   │   │   └── repositories/
+│   │   │   │       └── iptv_provider_repository_impl.dart
+│   │   │   ├── domain/
+│   │   │   │   ├── entities/
+│   │   │   │   │   ├── iptv_credentials.dart
+│   │   │   │   │   └── provider_info.dart
+│   │   │   │   ├── repositories/
+│   │   │   │   │   └── iptv_provider_repository.dart
+│   │   │   │   └── usecases/
+│   │   │   │       ├── add_provider_usecase.dart
+│   │   │   │       ├── test_provider_usecase.dart
+│   │   │   │       └── remove_provider_usecase.dart
+│   │   │   └── presentation/
+│   │   │       ├── providers/
+│   │   │       │   └── iptv_provider_provider.dart
+│   │   │       ├── pages/
+│   │   │       │   ├── manage_providers_page.dart
+│   │   │       │   └── add_provider_page.dart
+│   │   │       └── widgets/
+│   │   │           ├── provider_card.dart
+│   │   │           └── provider_status_indicator.dart
+│   │   │
+│   │   ├── live_tv/
+│   │   │   ├── data/
+│   │   │   │   ├── datasources/
+│   │   │   │   │   └── live_tv_remote_datasource.dart
+│   │   │   │   ├── models/
+│   │   │   │   │   ├── channel_model.dart
+│   │   │   │   │   ├── category_model.dart
+│   │   │   │   │   └── epg_model.dart
+│   │   │   │   └── repositories/
+│   │   │   │       └── live_tv_repository_impl.dart
+│   │   │   ├── domain/
+│   │   │   │   ├── entities/
+│   │   │   │   │   ├── channel.dart
+│   │   │   │   │   ├── category.dart
+│   │   │   │   │   └── epg_entry.dart
+│   │   │   │   ├── repositories/
+│   │   │   │   │   └── live_tv_repository.dart
+│   │   │   │   └── usecases/
+│   │   │   │       ├── get_channels_usecase.dart
+│   │   │   │       ├── get_categories_usecase.dart
+│   │   │   │       └── get_epg_usecase.dart
+│   │   │   └── presentation/
+│   │   │       ├── providers/
+│   │   │       │   ├── live_tv_provider.dart
+│   │   │       │   └── epg_provider.dart
+│   │   │       ├── pages/
+│   │   │       │   ├── live_tv_page.dart
+│   │   │       │   ├── channel_list_page.dart
+│   │   │       │   └── epg_page.dart
+│   │   │       └── widgets/
+│   │   │           ├── channel_card.dart
+│   │   │           ├── channel_grid.dart
+│   │   │           ├── epg_timeline.dart
+│   │   │           └── now_playing_banner.dart
+│   │   │
+│   │   ├── movies/
+│   │   │   ├── data/
+│   │   │   │   ├── datasources/
+│   │   │   │   │   └── movies_remote_datasource.dart
+│   │   │   │   ├── models/
+│   │   │   │   │   ├── movie_model.dart
+│   │   │   │   │   └── movie_details_model.dart
+│   │   │   │   └── repositories/
+│   │   │   │       └── movies_repository_impl.dart
+│   │   │   ├── domain/
+│   │   │   │   ├── entities/
+│   │   │   │   │   ├── movie.dart
+│   │   │   │   │   └── movie_details.dart
+│   │   │   │   ├── repositories/
+│   │   │   │   │   └── movies_repository.dart
+│   │   │   │   └── usecases/
+│   │   │   │       ├── get_movies_usecase.dart
+│   │   │   │       ├── get_movie_details_usecase.dart
+│   │   │   │       └── search_movies_usecase.dart
+│   │   │   └── presentation/
+│   │   │       ├── providers/
+│   │   │       │   └── movies_provider.dart
+│   │   │       ├── pages/
+│   │   │       │   ├── movies_page.dart
+│   │   │       │   └── movie_details_page.dart
+│   │   │       └── widgets/
+│   │   │           ├── movie_card.dart
+│   │   │           ├── movie_carousel.dart
+│   │   │           └── movie_info_section.dart
+│   │   │
+│   │   ├── series/
+│   │   │   ├── data/
+│   │   │   │   ├── datasources/
+│   │   │   │   │   └── series_remote_datasource.dart
+│   │   │   │   ├── models/
+│   │   │   │   │   ├── series_model.dart
+│   │   │   │   │   ├── season_model.dart
+│   │   │   │   │   └── episode_model.dart
+│   │   │   │   └── repositories/
+│   │   │   │       └── series_repository_impl.dart
+│   │   │   ├── domain/
+│   │   │   │   ├── entities/
+│   │   │   │   │   ├── series.dart
+│   │   │   │   │   ├── season.dart
+│   │   │   │   │   └── episode.dart
+│   │   │   │   ├── repositories/
+│   │   │   │   │   └── series_repository.dart
+│   │   │   │   └── usecases/
+│   │   │   │       ├── get_series_usecase.dart
+│   │   │   │       ├── get_series_details_usecase.dart
+│   │   │   │       └── get_episodes_usecase.dart
+│   │   │   └── presentation/
+│   │   │       ├── providers/
+│   │   │       │   └── series_provider.dart
+│   │   │       ├── pages/
+│   │   │       │   ├── series_page.dart
+│   │   │       │   ├── series_details_page.dart
+│   │   │       │   └── season_episodes_page.dart
+│   │   │       └── widgets/
+│   │   │           ├── series_card.dart
+│   │   │           ├── season_selector.dart
+│   │   │           └── episode_list.dart
+│   │   │
+│   │   ├── player/
+│   │   │   ├── data/
+│   │   │   │   └── services/
+│   │   │   │       └── player_service.dart
+│   │   │   ├── domain/
+│   │   │   │   └── entities/
+│   │   │   │       └── playback_state.dart
+│   │   │   └── presentation/
+│   │   │       ├── providers/
+│   │   │       │   └── player_provider.dart
+│   │   │       ├── pages/
+│   │   │       │   └── player_page.dart
+│   │   │       └── widgets/
+│   │   │           ├── video_player_widget.dart
+│   │   │           ├── player_controls.dart
+│   │   │           ├── progress_bar.dart
+│   │   │           ├── quality_selector.dart
+│   │   │           └── subtitle_selector.dart
+│   │   │
+│   │   ├── search/
+│   │   │   └── presentation/
+│   │   │       ├── providers/
+│   │   │       │   └── search_provider.dart
+│   │   │       ├── pages/
+│   │   │       │   └── search_page.dart
+│   │   │       └── widgets/
+│   │   │           ├── search_bar.dart
+│   │   │           └── search_results.dart
+│   │   │
+│   │   ├── favorites/
+│   │   │   ├── data/
+│   │   │   │   └── datasources/
+│   │   │   │       └── favorites_local_datasource.dart
+│   │   │   └── presentation/
+│   │   │       ├── providers/
+│   │   │       │   └── favorites_provider.dart
+│   │   │       └── pages/
+│   │   │           └── favorites_page.dart
+│   │   │
+│   │   ├── settings/
+│   │   │   └── presentation/
+│   │   │       ├── pages/
+│   │   │       │   ├── settings_page.dart
+│   │   │       │   ├── playback_settings_page.dart
+│   │   │       │   └── account_settings_page.dart
+│   │   │       └── widgets/
+│   │   │           └── settings_tile.dart
+│   │   │
+│   │   └── home/
+│   │       └── presentation/
+│   │           ├── pages/
+│   │           │   └── home_page.dart
+│   │           └── widgets/
+│   │               ├── content_row.dart
+│   │               ├── featured_banner.dart
+│   │               └── category_tabs.dart
+│   │
+│   └── shared/
+│       ├── data/
+│       │   └── local_storage/
+│       │       ├── secure_storage.dart
+│       │       └── preferences_storage.dart
+│       ├── domain/
+│       │   └── entities/
+│       │       └── media_item.dart
+│       └── presentation/
+│           ├── widgets/
+│           │   ├── adaptive_layout.dart
+│           │   ├── loading_indicator.dart
+│           │   ├── error_widget.dart
+│           │   ├── media_card.dart
+│           │   ├── shimmer_loading.dart
+│           │   └── responsive_grid.dart
+│           └── dialogs/
+│               ├── confirmation_dialog.dart
+│               └── error_dialog.dart
+│
+├── test/
+│   ├── features/
+│   │   ├── auth/
+│   │   ├── live_tv/
+│   │   ├── movies/
+│   │   └── series/
+│   ├── helpers/
+│   │   └── test_helpers.dart
+│   └── fixtures/
+│       └── json_fixtures.dart
+│
+├── integration_test/
+│   └── app_test.dart
+│
+├── android/
+├── ios/
+├── web/
+├── linux/      # For TV platforms
+├── macos/
+├── windows/
+│
+├── docker/
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── nginx.conf
+│
+├── assets/
+│   ├── images/
+│   ├── icons/
+│   └── fonts/
+│
+├── .claude/
+│   └── context.md
+│
+├── pubspec.yaml
+├── analysis_options.yaml
+├── .env.example
+├── .gitignore
+└── README.md
+```
+
+---
+
+## pubspec.yaml
+
+```yaml
+name: streaming_app
+description: Netflix/Jellyfin-style streaming app with IPTV integration
+version: 1.0.0+1
+publish_to: none
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.16.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+
+  # Networking
+  dio: ^5.4.0
+  connectivity_plus: ^5.0.2
+
+  # Local Storage
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Navigation
+  go_router: ^13.0.1
+
+  # Models
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+  equatable: ^2.0.5
+
+  # Dependency Injection
+  get_it: ^7.6.4
+  injectable: ^2.3.2
+
+  # Video Player
+  video_player: ^2.8.2
+  chewie: ^1.7.4
+  better_player: ^0.0.84
+  # For TV platforms
+  # media_kit: ^1.1.10
+  # media_kit_video: ^1.2.4
+
+  # UI Components
+  cached_network_image: ^3.3.1
+  shimmer: ^3.0.0
+  gap: ^3.0.1
+  flutter_svg: ^2.0.9
+  carousel_slider: ^4.2.1
+  smooth_page_indicator: ^1.1.0
+
+  # Responsive/Adaptive
+  responsive_framework: ^1.1.1
+  flutter_screenutil: ^5.9.0
+
+  # Forms
+  reactive_forms: ^16.1.1
+
+  # Utilities
+  dartz: ^0.10.1
+  intl: ^0.18.1
+  uuid: ^4.2.2
+  collection: ^1.18.0
+  logger: ^2.0.2+1
+  url_launcher: ^6.2.2
+  share_plus: ^7.2.1
+  device_info_plus: ^9.1.1
+  package_info_plus: ^5.0.1
+  wakelock_plus: ^1.1.4        # Keep screen on during playback
+
+  # Platform specific
+  android_intent_plus: ^4.0.3  # For Firestick deep links
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+  # Code Generation
+  build_runner: ^2.4.8
+  freezed: ^2.4.6
+  json_serializable: ^6.7.1
+  riverpod_generator: ^2.3.9
+  injectable_generator: ^2.4.1
+  hive_generator: ^2.0.1
+
+  # Testing
+  mocktail: ^1.0.1
+  network_image_mock: ^2.1.1
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+```
+
+---
+
+## Docker Configuration
+
+### Dockerfile
+
+```dockerfile
+# Build stage
+FROM debian:latest AS build
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    unzip \
+    xz-utils \
+    zip \
+    libglu1-mesa
+
+# Install Flutter
+RUN git clone https://github.com/flutter/flutter.git /flutter
+ENV PATH="/flutter/bin:$PATH"
+RUN flutter doctor
+RUN flutter config --enable-web
+
+WORKDIR /app
+COPY . .
+
+RUN flutter pub get
+RUN flutter build web --release
+
+# Production stage
+FROM nginx:alpine
+
+COPY --from=build /app/build/web /usr/share/nginx/html
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+### docker-compose.yml
+
+```yaml
+version: '3.8'
+
+services:
+  streaming-app:
+    build: .
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+
+  # Optional: Add backend API
+  # api:
+  #   build: ./backend
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - DATABASE_URL=postgresql://user:pass@db:5432/streaming
+  #   depends_on:
+  #     - db
+
+  # db:
+  #   image: postgres:15
+  #   environment:
+  #     - POSTGRES_USER=user
+  #     - POSTGRES_PASSWORD=pass
+  #     - POSTGRES_DB=streaming
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+# volumes:
+#   postgres_data:
+```
+
+### nginx.conf
+
+```nginx
+server {
+    listen 80;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Gzip compression
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml;
+
+    # Flutter web app routing
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Cache static assets
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Service worker
+    location /flutter_service_worker.js {
+        add_header Cache-Control "no-cache";
+    }
+}
+```
+
+---
+
+## User Flow
+
+### Registration & Onboarding
+
+```
+1. Welcome Screen
+   ├── Sign Up → Registration Form
+   │   ├── Email/Password
+   │   ├── Verify Email
+   │   └── Create Profile
+   │
+   └── Sign In → Login Form
+
+2. Provider Setup (Post-Registration)
+   ├── Choose Provider Type
+   │   ├── Xtream Code API
+   │   └── Stalker Portal
+   │
+   ├── Enter Credentials
+   │   ├── Xtream: Server URL, Username, Password
+   │   └── Stalker: Portal URL, MAC Address
+   │
+   ├── Test Connection
+   │   ├── Success → Show Channel Count
+   │   └── Failure → Show Error, Retry
+   │
+   └── Complete Setup → Home Screen
+
+3. Home Screen
+   ├── Live TV Tab
+   ├── Movies Tab
+   ├── Series Tab
+   └── Settings
+```
+
+### Content Navigation
+
+```
+Home
+├── Featured Content (Hero Banner)
+├── Continue Watching
+├── Live TV Highlights
+├── Popular Movies
+├── Popular Series
+└── Recently Added
+
+Live TV
+├── All Channels
+├── Categories (Sports, News, Entertainment, etc.)
+├── EPG Guide
+└── Favorites
+
+Movies
+├── All Movies
+├── Categories
+├── Search
+└── Movie Details → Play
+
+Series
+├── All Series
+├── Categories
+├── Series Details
+│   ├── Seasons
+│   └── Episodes → Play
+└── Search
+```
+
+---
+
+## Platform-Specific Notes
+
+### Android TV / Firestick
+
+```dart
+// Use TV-specific navigation
+class TVFocusableWidget extends StatelessWidget {
+  // Handle D-pad navigation
+  // Implement focus states
+  // Large touch targets
+}
+
+// Leanback launcher integration
+// Add to AndroidManifest.xml:
+// <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
+```
+
+### iOS/iPadOS
+
+```dart
+// Support Picture-in-Picture
+// Handle background audio
+// Integrate with AirPlay
+```
+
+### Web
+
+```dart
+// Keyboard shortcuts
+// Responsive breakpoints
+// Full-screen support
+```
+
+---
+
+## Quick Start Commands
+
+```bash
+# Create project
+flutter create streaming_app
+cd streaming_app
+
+# Add dependencies
+flutter pub add flutter_riverpod riverpod_annotation dio go_router freezed_annotation json_annotation equatable dartz get_it injectable video_player chewie cached_network_image shimmer
+
+# Add dev dependencies
+flutter pub add --dev build_runner freezed json_serializable riverpod_generator injectable_generator mocktail
+
+# Generate code
+flutter pub run build_runner build --delete-conflicting-outputs
+
+# Run on different platforms
+flutter run -d chrome          # Web
+flutter run -d android         # Android
+flutter run -d ios             # iOS
+flutter run -d linux           # Linux (TV dev)
+
+# Build for production
+flutter build apk --release
+flutter build web --release
+flutter build ios --release
+
+# Docker
+docker-compose up --build
+```

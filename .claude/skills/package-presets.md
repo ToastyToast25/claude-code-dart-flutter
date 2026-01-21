@@ -383,3 +383,73 @@ Pick one:
 - `dio` (recommended, interceptors)
 - `http` (simple, lightweight)
 - `chopper` (code gen)
+
+---
+
+### Preset: Streaming
+
+Netflix/Jellyfin-style streaming app with IPTV integration.
+
+```yaml
+dependencies:
+  # ... include Standard preset ...
+
+  # Video Player
+  video_player: ^2.8.2
+  chewie: ^1.7.4
+  better_player: ^0.0.84
+  wakelock_plus: ^1.1.4        # Keep screen on
+
+  # UI - Media Focused
+  carousel_slider: ^4.2.1
+  smooth_page_indicator: ^1.1.0
+  responsive_framework: ^1.1.1
+  flutter_screenutil: ^5.9.0
+
+  # Offline/Caching
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Device Info
+  device_info_plus: ^9.1.1
+  package_info_plus: ^5.0.1
+
+  # Sharing
+  share_plus: ^7.2.1
+  url_launcher: ^6.2.2
+
+  # Platform specific
+  android_intent_plus: ^4.0.3  # Firestick deep links
+
+dev_dependencies:
+  # ... include Standard preset ...
+  hive_generator: ^2.0.1
+  network_image_mock: ^2.1.1
+```
+
+**Use for**: IPTV apps, streaming services, media players, Jellyfin/Plex alternatives
+
+**Features supported**:
+- Xtream Code API integration
+- Stalker Portal API integration
+- Live TV with EPG
+- VOD (Movies)
+- Series with seasons/episodes
+- Multi-platform (Web, Android, iOS, Firestick, Docker)
+
+**See also**:
+- `.claude/skills/xtream-stalker-api.md` - API integration details
+- `.claude/templates/streaming-app.template` - Full project structure
+- `.claude/agents/repo-analyzer.md` - Analyze reference repos (Jellyflix, Jellyfin)
+
+---
+
+### Quick Commands - Streaming Preset
+
+```bash
+# Add streaming dependencies
+flutter pub add video_player chewie better_player wakelock_plus carousel_slider smooth_page_indicator responsive_framework flutter_screenutil hive hive_flutter device_info_plus package_info_plus share_plus url_launcher android_intent_plus
+
+# Add dev dependencies
+flutter pub add --dev hive_generator network_image_mock
+```

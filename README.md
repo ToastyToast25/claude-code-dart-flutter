@@ -20,9 +20,9 @@ claude
 
 | Component | Count | Description |
 |-----------|-------|-------------|
-| **Agents** | 34 | Specialized assistants for different tasks |
-| **Skills** | 31 | Reusable code patterns with auto-activation |
-| **Templates** | 10 | Boilerplate for features, BLoCs, pages, etc. |
+| **Agents** | 35 | Specialized assistants for different tasks |
+| **Skills** | 32 | Reusable code patterns with auto-activation |
+| **Templates** | 11 | Boilerplate for features, BLoCs, pages, etc. |
 | **Commands** | 7 | Slash commands for common workflows |
 | **Hooks** | 10 | Enforcement scripts for code quality |
 
@@ -43,6 +43,7 @@ claude
 | Agent | Trigger Keywords |
 |-------|------------------|
 | Project Setup | "new project", "init project", "setup project" |
+| Repository Analyzer | "analyze repo", "jellyflix", "extract patterns" |
 | Code Review | "review", "PR review", "check code" |
 | Test Writer | "write tests", "add tests", "unit test" |
 | Debugging | "error", "bug", "debug", "fix error" |
@@ -66,10 +67,13 @@ Skills automatically activate when you work on matching files:
 | `lib/**/repositories/*.dart` | Repository pattern |
 | `lib/**/validators/*.dart` | Input validation patterns |
 | `test/**/*.dart` | Test patterns |
-| `pubspec.yaml` | Package management |
+| `pubspec.yaml` | Package management, Package presets |
 | `CHANGELOG.md` | Versioning patterns |
 | `backend/**/*.dart` | API endpoint & security patterns |
 | `routes/**/*.dart` | API endpoint & security patterns |
+| `lib/**/xtream/**/*.dart` | Xtream Code API patterns |
+| `lib/**/stalker/**/*.dart` | Stalker Portal API patterns |
+| `lib/**/iptv/**/*.dart` | IPTV streaming patterns |
 
 ## Directory Structure
 
@@ -78,30 +82,33 @@ Skills automatically activate when you work on matching files:
 ├── registry.md          # Central index - START HERE
 ├── QUICKSTART.md        # 5-minute getting started guide
 ├── settings.json        # Hooks, auto-context, permissions
-├── agents/              # 34 specialized agents
+├── agents/              # 35 specialized agents
 │   ├── project-setup.md
+│   ├── repo-analyzer.md  # Analyze Jellyflix/Jellyfin repos
 │   ├── code-review.md
 │   ├── debugging.md
 │   ├── security-audit.md
 │   └── ... (30 more)
-├── skills/              # 30 reusable skills
+├── skills/              # 32 reusable skills
 │   ├── create-bloc.md
 │   ├── create-widget.md
 │   ├── create-test.md
 │   ├── input-security.md
 │   ├── project-maintenance.md
-│   └── ... (25 more)
+│   ├── xtream-stalker-api.md  # IPTV API integration
+│   └── ... (26 more)
 ├── commands/            # 7 slash commands
 │   ├── new.md
 │   ├── test.md
 │   ├── deploy.md
 │   ├── validate.md
 │   └── ... (3 more)
-├── templates/           # 6 code templates
+├── templates/           # 11 code templates
 │   ├── feature.dart.template
 │   ├── bloc.dart.template
 │   ├── page.dart.template
-│   └── ... (3 more)
+│   ├── streaming-app.template  # Netflix/Jellyfin IPTV app
+│   └── ... (7 more)
 ├── hooks/               # 10 enforcement scripts
 │   ├── block-secrets.py
 │   ├── security-scan.py
@@ -155,10 +162,10 @@ Keep configuration files synchronized with `/project:validate`:
 
 # Output:
 # === Project Validation Report ===
-# [OK] Agents: 34 (registry: 34)
-# [OK] Skills: 31 (registry: 31)
+# [OK] Agents: 35 (registry: 35)
+# [OK] Skills: 32 (registry: 32)
 # [OK] Commands: 7 (registry: 7)
-# [OK] Templates: 10 (registry: 10)
+# [OK] Templates: 11 (registry: 11)
 # [OK] Hooks: 10 (registry: 10)
 ```
 
@@ -245,8 +252,35 @@ Use templates for rapid scaffolding:
 | `page.dart.template` | Page with BLoC integration |
 | `widget.dart.template` | Stateless/Stateful widgets |
 | `test.dart.template` | Unit, widget, and BLoC tests |
+| `streaming-app.template` | Netflix/Jellyfin IPTV streaming app |
 
 Ask Claude: "Create a products feature using the feature template"
+
+## Streaming App Preset
+
+Build Netflix/Jellyfin-style streaming apps with IPTV integration:
+
+```
+Build a streaming app with:
+- Xtream Code API for live TV
+- Stalker Portal support
+- User registration workflow
+- Multi-platform (Web, Android, iOS, Firestick)
+```
+
+**Features**:
+- Xtream Code API integration (Live TV, VOD, Series, EPG)
+- Stalker Portal API integration (MAC-based auth)
+- Video player with HLS/TS support
+- Offline caching with Hive
+- Responsive UI for TV, tablet, mobile
+- Docker deployment support
+
+**Related Files**:
+- [xtream-stalker-api.md](.claude/skills/xtream-stalker-api.md) - API integration
+- [streaming-app.template](.claude/templates/streaming-app.template) - Project scaffold
+- [repo-analyzer.md](.claude/agents/repo-analyzer.md) - Analyze Jellyflix/Jellyfin
+- [package-presets.md](.claude/skills/package-presets.md) - Streaming preset
 
 ## Best Practices
 

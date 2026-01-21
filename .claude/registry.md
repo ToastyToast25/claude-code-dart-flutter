@@ -44,6 +44,7 @@ Central registry of all agents and skills. Consult this file on each request to 
 | Mobile | `agents/mobile.md` | platform channel, native code, iOS, Android, push notifications, deep links, biometrics |
 | Internationalization | `agents/internationalization.md` | i18n, l10n, localization, translations, RTL, multi-language, locale |
 | Migration | `agents/migration.md` | flutter upgrade, dart upgrade, migration, null safety, version upgrade |
+| Repository Analyzer | `agents/repo-analyzer.md` | analyze repo, jellyflix, jellyfin, extract patterns, reference architecture, clone repos |
 
 ---
 
@@ -98,6 +99,7 @@ If multiple agents could apply, use this priority:
 | Hotfix | Debugging → Test Writer → Deployment → Learning System |
 | Build Similar App | Repository Import → Project Setup → Architecture → Platform Installer |
 | Deploy Full Stack | Platform Installer → Cloudflare → Deployment → Monitoring |
+| Build Streaming App | Repository Analyzer → Project Setup (Streaming preset) → Architecture → Platform Installer |
 
 ---
 
@@ -891,6 +893,41 @@ If multiple agents could apply, use this priority:
 
 ---
 
+### Repository Analyzer Agent
+**File**: `agents/repo-analyzer.md`
+**Purpose**: Analyze external Flutter/Dart repositories to extract patterns for hybrid app development
+**Invoke When**:
+- Building a streaming/media app
+- Need to analyze Jellyflix or Jellyfin architecture
+- Extracting patterns from reference repositories
+- Designing hybrid app combining multiple sources
+- User mentions "analyze repo" or "extract patterns"
+
+**Workflow**:
+1. Clone reference repositories to `reference_repos/`
+2. Analyze architecture, state management, API patterns
+3. Document reusable components and widgets
+4. Identify patterns to adopt and avoid
+5. Generate architecture recommendations
+
+**Reference Repos**:
+- Jellyflix: `https://github.com/jellyflix-app/jellyflix`
+- Finamp: `https://github.com/jmshrv/finamp`
+
+**Outputs**:
+- Repository analysis document
+- Architecture comparison
+- Reusable component list
+- Pattern recommendations
+- Hybrid architecture proposal
+
+**Related Skills**:
+- `skills/xtream-stalker-api.md` - IPTV API integration
+- `skills/package-presets.md` - Streaming preset
+- `templates/streaming-app.template` - Full project scaffold
+
+---
+
 ## Skill Registry
 
 | Skill | File | Trigger |
@@ -926,6 +963,7 @@ If multiple agents could apply, use this priority:
 | Input Security | `skills/input-security.md` | input security, sanitize, xss, ssrf, injection, secure input |
 | Project Maintenance | `skills/project-maintenance.md` | maintain project, update registry, sync files, project config |
 | Package Presets | `skills/package-presets.md` | package presets, dependencies, minimal, standard, enterprise |
+| Xtream/Stalker API | `skills/xtream-stalker-api.md` | xtream code, stalker portal, iptv, live tv, streaming api, m3u, epg |
 
 ---
 
@@ -942,6 +980,7 @@ Code templates for rapid scaffolding. Located in `templates/`.
 | Pubspec | `templates/pubspec.yaml.template` | Configurable pubspec with package presets |
 | Analysis Options | `templates/analysis_options.yaml.template` | Strict linting configuration |
 | Auth Feature | `templates/auth-feature.template` | Complete authentication scaffold |
+| Streaming App | `templates/streaming-app.template` | Netflix/Jellyfin streaming app with IPTV |
 | Page | `templates/page.dart.template` | Full page with BLoC integration |
 | Widget | `templates/widget.dart.template` | Stateless/Stateful/Consumer variants |
 | Test | `templates/test.dart.template` | Unit/BLoC/Widget/Golden tests |
@@ -1215,9 +1254,9 @@ Future<Either<Failure, User>> signIn(String email, String password);
 
 | Category | Count |
 |----------|-------|
-| Total Agents | 34 |
-| Total Skills | 31 |
-| Templates | 10 |
+| Total Agents | 35 |
+| Total Skills | 32 |
+| Templates | 11 |
 | Commands | 7 |
 | Hooks | 10 |
 | Multi-Agent Workflows | 25 |
@@ -1234,21 +1273,23 @@ Future<Either<Failure, User>> signIn(String email, String password);
 ├── context.md               # Project context and session notes
 ├── QUICKSTART.md            # 5-minute getting started guide
 ├── settings.json            # Auto-context and hook configuration
-├── agents/                  # Agent definitions (34 agents)
+├── agents/                  # Agent definitions (35 agents)
 │   ├── orchestration.md     # How agents work together
 │   ├── project-setup.md
 │   ├── repo-import.md
+│   ├── repo-analyzer.md     # Analyze external repos (Jellyflix, Jellyfin)
 │   ├── platform-installer.md
 │   ├── learning-system.md
 │   ├── agent-testing.md
 │   └── ... (28 more)
-├── skills/                  # Skill definitions (31 skills)
+├── skills/                  # Skill definitions (32 skills)
 │   ├── create-feature.md
 │   ├── create-widget.md
 │   ├── versioning.md
 │   ├── input-security.md
 │   ├── project-maintenance.md
 │   ├── package-presets.md
+│   ├── xtream-stalker-api.md # IPTV streaming API integration
 │   └── ... (25 more)
 ├── docs/                    # Reference documentation (3 docs)
 │   ├── effective-dart.md    # Dart style guide
@@ -1262,7 +1303,7 @@ Future<Either<Failure, User>> signIn(String email, String password);
 │   ├── fix-issue.md         # /project:fix-issue
 │   ├── release.md           # /project:release
 │   └── validate.md          # /project:validate
-├── templates/               # Code templates (10 templates)
+├── templates/               # Code templates (11 templates)
 │   ├── feature.dart.template
 │   ├── bloc.dart.template
 │   ├── repository.dart.template
@@ -1272,7 +1313,8 @@ Future<Either<Failure, User>> signIn(String email, String password);
 │   ├── project-structure.template
 │   ├── pubspec.yaml.template
 │   ├── analysis_options.yaml.template
-│   └── auth-feature.template
+│   ├── auth-feature.template
+│   └── streaming-app.template # Netflix/Jellyfin IPTV streaming app
 ├── hooks/                   # Enforcement hooks (10 hooks)
 │   ├── block-secrets.py     # Block editing secret files
 │   ├── block-dangerous.py   # Block dangerous commands
