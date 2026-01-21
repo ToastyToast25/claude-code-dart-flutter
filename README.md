@@ -6,8 +6,8 @@ A comprehensive agent and skill system for Dart/Flutter development with Claude 
 
 ```bash
 # Clone this repository
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
+git clone https://github.com/ToastyToast25/claude-code-dart-flutter.git
+cd claude-code-dart-flutter
 
 # Start Claude Code
 claude
@@ -21,10 +21,10 @@ claude
 | Component | Count | Description |
 |-----------|-------|-------------|
 | **Agents** | 34 | Specialized assistants for different tasks |
-| **Skills** | 27 | Reusable code patterns with auto-activation |
+| **Skills** | 30 | Reusable code patterns with auto-activation |
 | **Templates** | 6 | Boilerplate for features, BLoCs, pages, etc. |
-| **Commands** | 5 | Slash commands for common workflows |
-| **Hooks** | 5 | Enforcement scripts for code quality |
+| **Commands** | 7 | Slash commands for common workflows |
+| **Hooks** | 6 | Enforcement scripts for code quality |
 
 ## Slash Commands
 
@@ -35,6 +35,8 @@ claude
 | `/project:review` | Comprehensive code review |
 | `/project:deploy [env]` | Deploy to staging/production |
 | `/project:fix-issue [#]` | Fix a GitHub issue by number |
+| `/project:release` | Create a new release with versioning |
+| `/project:validate` | Validate project configuration consistency |
 
 ## Key Agents
 
@@ -62,8 +64,12 @@ Skills automatically activate when you work on matching files:
 | `lib/**/pages/*.dart` | Page scaffolding |
 | `lib/**/widgets/*.dart` | Widget patterns |
 | `lib/**/repositories/*.dart` | Repository pattern |
+| `lib/**/validators/*.dart` | Input validation patterns |
 | `test/**/*.dart` | Test patterns |
 | `pubspec.yaml` | Package management |
+| `CHANGELOG.md` | Versioning patterns |
+| `backend/**/*.dart` | API endpoint & security patterns |
+| `routes/**/*.dart` | API endpoint & security patterns |
 
 ## Directory Structure
 
@@ -76,26 +82,32 @@ Skills automatically activate when you work on matching files:
 │   ├── project-setup.md
 │   ├── code-review.md
 │   ├── debugging.md
-│   └── ...
-├── skills/              # 27 reusable skills
+│   ├── security-audit.md
+│   └── ... (30 more)
+├── skills/              # 30 reusable skills
 │   ├── create-bloc.md
 │   ├── create-widget.md
 │   ├── create-test.md
-│   └── ...
-├── commands/            # Slash commands
+│   ├── input-security.md
+│   ├── project-maintenance.md
+│   └── ... (25 more)
+├── commands/            # 7 slash commands
 │   ├── new.md
 │   ├── test.md
 │   ├── deploy.md
-│   └── ...
-├── templates/           # Code templates
+│   ├── validate.md
+│   └── ... (3 more)
+├── templates/           # 6 code templates
 │   ├── feature.dart.template
 │   ├── bloc.dart.template
 │   ├── page.dart.template
-│   └── ...
-├── hooks/               # Enforcement scripts
+│   └── ... (3 more)
+├── hooks/               # 6 enforcement scripts
 │   ├── block-secrets.py
 │   ├── quality-check.py
-│   └── ...
+│   ├── validate-project.py
+│   └── ... (3 more)
+├── rules/               # Mandatory code quality rules
 ├── memory/              # Persistent learnings
 └── docs/                # Reference documentation
 ```
@@ -108,6 +120,42 @@ These rules are automatically enforced by hooks:
 - **Blocked**: `rm -rf /`, `git push --force main`, `DROP DATABASE`
 - **Auto-format**: Dart files are formatted after edits
 - **Quality check**: No TODO comments, dead code, or deprecated APIs allowed
+
+## Security Features
+
+Built-in protection against common vulnerabilities:
+
+- **XSS Prevention**: HTML sanitization, Content Security Policy patterns
+- **SSRF Prevention**: URL validation, blocked private IP ranges, DNS rebinding protection
+- **SQL/NoSQL Injection**: Parameterized queries, input sanitization
+- **Command Injection**: Shell character filtering, safe process execution
+- **Path Traversal**: Path validation, sandboxed file access
+- **Input Validation**: Comprehensive validators for all user inputs
+
+See [input-security.md](.claude/skills/input-security.md) for implementation details.
+
+## Project Maintenance
+
+Keep configuration files synchronized with `/project:validate`:
+
+```bash
+# Check for configuration issues
+/project:validate
+
+# Output:
+# === Project Validation Report ===
+# [OK] Agents: 34 (registry: 34)
+# [OK] Skills: 30 (registry: 30)
+# [OK] Commands: 7 (registry: 7)
+# [OK] Templates: 6 (registry: 6)
+# [OK] Hooks: 6 (registry: 6)
+```
+
+The validation checks:
+- File counts match registry.md
+- All referenced files exist
+- Skills have valid frontmatter
+- Hooks are properly wired in settings.json
 
 ## Usage Examples
 
