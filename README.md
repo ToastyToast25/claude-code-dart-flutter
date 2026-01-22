@@ -301,6 +301,47 @@ Build a streaming app with:
 - [repo-analyzer.md](.claude/agents/repo-analyzer.md) - Analyze Jellyflix/Jellyfin
 - [package-presets.md](.claude/skills/package-presets.md) - Streaming preset
 
+## Existing Projects
+
+Already have a project? You can still use these features by asking Claude:
+
+### Pull Reference Repositories
+
+```
+pull streaming repos
+```
+
+This clones 4 reference repos to `reference_repos/` for pattern analysis:
+- **Jellyflix** - Flutter Jellyfin video client
+- **Finamp** - Flutter Jellyfin music client
+- **IPTVnator** - Angular IPTV player (M3U/EPG patterns)
+- **Jellyfin** - Media server backend (API reference)
+
+### Set Up Docker Containers
+
+```
+setup docker
+```
+
+This sets up the full development stack:
+- **PostgreSQL** (5432) + **pgAdmin** (5050)
+- **Redis Stack** (6379) + **RedisInsight** (8001)
+- **Prisma Studio** (5555)
+- **Mailhog** (1025/8025)
+- **Playwright MCP** (3000)
+- **Archon** (8501) + **Qdrant** (6333)
+
+Credentials are saved to `.credentials` (gitignored).
+
+### Other Triggers
+
+| Say | Action |
+|-----|--------|
+| "analyze jellyflix" | Clone + analyze specific repo |
+| "streaming patterns" | Extract patterns from all repos |
+| "install archon" | Add Archon AI agent builder |
+| "setup databases" | PostgreSQL + Redis only |
+
 ## Best Practices
 
 ### Be Specific
