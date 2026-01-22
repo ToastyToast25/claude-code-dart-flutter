@@ -357,6 +357,55 @@ if (Test-Path ".gitignore") {
     Write-Host "[OK] Created .gitignore with .credentials entry" -ForegroundColor Green
 }
 
+# Auto-enable MCP servers in .mcp.json
+Write-Host ""
+Write-Host "=== Configuring MCP Servers ===" -ForegroundColor Cyan
+
+$mcpJsonPath = ".mcp.json"
+if (Test-Path $mcpJsonPath) {
+    $mcpConfig = Get-Content $mcpJsonPath -Raw | ConvertFrom-Json
+    $mcpModified = $false
+
+    # Check if Playwright MCP is running
+    try {
+        $playwrightCheck = Invoke-WebRequest -Uri "http://localhost:3000" -TimeoutSec 3 -UseBasicParsing -ErrorAction Stop
+        if ($mcpConfig.disabledMcpServers -contains "playwright") {
+            # Move from disabled to enabled
+            $mcpConfig.disabledMcpServers = @($mcpConfig.disabledMcpServers | Where-Object { $_ -ne "playwright" })
+            $mcpConfig.mcpServers | Add-Member -NotePropertyName "playwright" -NotePropertyValue $mcpConfig.availableServers.playwright -Force
+            $mcpModified = $true
+            Write-Host "[OK] Playwright MCP enabled in .mcp.json" -ForegroundColor Green
+        }
+    } catch {
+        Write-Host "[SKIP] Playwright MCP not running - keeping disabled" -ForegroundColor Yellow
+    }
+
+    # Check if Archon is running
+    if (Test-Path "archon") {
+        try {
+            $archonCheck = Invoke-WebRequest -Uri "http://localhost:8501" -TimeoutSec 3 -UseBasicParsing -ErrorAction Stop
+            if ($mcpConfig.disabledMcpServers -contains "archon") {
+                # Move from disabled to enabled
+                $mcpConfig.disabledMcpServers = @($mcpConfig.disabledMcpServers | Where-Object { $_ -ne "archon" })
+                $mcpConfig.mcpServers | Add-Member -NotePropertyName "archon" -NotePropertyValue $mcpConfig.availableServers.archon -Force
+                $mcpModified = $true
+                Write-Host "[OK] Archon MCP enabled in .mcp.json" -ForegroundColor Green
+            }
+        } catch {
+            Write-Host "[SKIP] Archon not running - keeping disabled" -ForegroundColor Yellow
+        }
+    }
+
+    # Save updated config
+    if ($mcpModified) {
+        $mcpConfig | ConvertTo-Json -Depth 10 | Out-File -FilePath $mcpJsonPath -Encoding utf8
+        Write-Host ""
+        Write-Host "IMPORTANT: Restart Claude Code to load MCP changes!" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "[SKIP] .mcp.json not found" -ForegroundColor Yellow
+}
+
 # Final status
 Write-Host ""
 if ($allPassed) {
@@ -373,6 +422,10 @@ if ($allPassed) {
     if (Test-Path "archon") {
         Write-Host "  Archon:        http://localhost:8501" -ForegroundColor White
     }
+    Write-Host ""
+    Write-Host "MCP Servers (restart Claude Code if just enabled):" -ForegroundColor Cyan
+    Write-Host "  Playwright:    http://localhost:3000" -ForegroundColor White
+    Write-Host "  Archon:        http://localhost:8501/mcp" -ForegroundColor White
 } else {
     Write-Host "=== SETUP INCOMPLETE ===" -ForegroundColor Red
     Write-Host ""
