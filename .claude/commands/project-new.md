@@ -13,43 +13,109 @@ Initialize a new Dart/Flutter project with the full agent workflow.
 /project-new [project-name]
 ```
 
+## Arguments
+
+- `$ARGUMENTS` - Optional project name (lowercase, underscores allowed)
+
 ## Workflow
 
-Execute the following steps:
+Execute the following steps using the **Project Setup Agent** (`agents/project-setup.md`):
 
-1. **Check for Reference Repository**
-   - Ask: "Are you building upon or inspired by an existing GitHub repository?"
-   - If yes, invoke Repository Import Agent first
+### Phase 1: Gather Information
 
-2. **Gather Requirements**
-   - Project type (mobile/web/full-stack)
-   - Target platforms (Android, iOS, Web, Desktop)
-   - Subdomain architecture (if web)
-   - Backend needs
-   - Database choice
+1. **Q1: Project Name** (skip if `$ARGUMENTS` provided)
+   - Validate: lowercase, underscores, no reserved words
 
-3. **Create Project Structure**
-   - Based on answers, select architecture pattern
+2. **Q2: Reference Repository**
+   - Ask if building upon existing GitHub repo
+   - If yes → Hand off to Repository Import Agent first
+
+3. **Q3: Target Platforms** (multi-select)
+   - Android, iOS, Web, Desktop, Backend-only
+   - Derives: `hasMobile`, `hasWeb`, `hasDesktop`, `isBackendOnly`
+
+4. **Q4: Subdomain Architecture** (skip if no web)
+   - Independent servers vs shared deployment vs none
+
+5. **Q5: Which Subdomains** (skip if Q4 = no)
+   - Admin, Support, Docs, Blog, Developer Portal
+
+6. **Q6: Backend Type**
+   - Dart backend, External API, Firebase/Supabase, None
+
+7. **Q7: Database** (skip if no backend AND no mobile)
+   - PostgreSQL, SQLite, Firestore, Supabase, None
+
+8. **Q8: State Management** (skip if backend-only)
+   - Riverpod, BLoC, Provider
+
+9. **Q9: Authentication**
+   - Full auth, Firebase Auth, Custom JWT, None
+
+10. **Q10: Package Preset**
+    - Minimal, Standard, Streaming, Enterprise, Custom
+
+11. **Q11: Project Visibility**
+    - Private, MIT, Apache 2.0, GPL
+
+### Phase 2: Execute Setup
+
+1. **Select Architecture Pattern**
+   - Pattern A: Single App
+   - Pattern B: Monorepo Shared
+   - Pattern C: Distributed Subdomains
+   - Pattern D: Extensible
+   - Pattern E: Backend Only
+
+2. **Create Project Structure**
    - Generate folder structure
    - Create configuration files
+   - Set up shared packages if needed
 
-4. **Verify Setup**
-   - Run Agent Testing verification
+3. **Apply Templates**
+   - Use appropriate templates from `templates/`
+   - Configure based on selected preset
+
+### Phase 3: Verify & Document
+
+1. **Run Verification**
+   - Invoke Agent Testing for quality check
    - Ensure code compiles
    - Check for any issues
 
-5. **Document Decisions**
+2. **Document Decisions**
    - Update `.claude/context.md`
    - Record in Learning System
 
-## Arguments
+3. **Provide Next Steps**
+   - Commands to run
+   - What to do next
 
-- `$ARGUMENTS` - Optional project name
+## Conditional Skip Logic
 
-## Example
+| Question | Skip When |
+|----------|-----------|
+| Q1: Project Name | `$ARGUMENTS` provided |
+| Q4: Subdomains | `hasWeb` = false |
+| Q5: Which Subdomains | Q4 = "No" |
+| Q7: Database | No backend AND no mobile |
+| Q8: State Management | Backend-only project |
 
+## Examples
+
+```bash
+# Start with project name
+/project-new my_app
+
+# Start without name (will prompt)
+/project-new
 ```
-/project-new my-app
-```
 
-This will start the interactive project setup workflow.
+## Related Agents
+
+- **Repository Import Agent** - Analyze reference repos
+- **Architecture Agent** - Detailed structure decisions
+- **Database Design Agent** - Schema setup
+- **Automation Agent** - CI/CD configuration
+- **Platform Installer Agent** - Deployment setup
+- **Agent Testing Agent** - Verify generated code

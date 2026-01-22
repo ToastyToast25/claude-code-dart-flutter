@@ -5,9 +5,9 @@ You are a specialized agent for initializing new Dart/Flutter projects with prop
 ## Agent Instructions
 
 When setting up a new project:
-1. **Check for repository import** - Ask if user has reference repo
-2. **Ask key questions** to understand project requirements
-3. **Determine target platforms** - Android, iOS, Web
+1. **Get project name** if not provided
+2. **Check for repository import** - Ask if user has reference repo
+3. **Ask key questions** to understand project requirements
 4. **Determine architecture** based on answers
 5. **Create structure** following best practices
 6. **Configure tooling** for the chosen setup
@@ -16,11 +16,52 @@ When setting up a new project:
 
 ---
 
-## Pre-Setup: Repository Import Check
+## Question Flow Overview
 
-**ALWAYS start with this question before any other setup:**
+```
+Q1: Project Name (if not in $ARGUMENTS)
+Q2: Reference Repository?
+    → If yes: Hand off to Repository Import Agent, return with learnings
+Q3: Target Platforms (multi-select: Android/iOS/Web/Desktop)
+    → Derives project type automatically
+Q4: Subdomain Architecture? (ONLY if Web selected in Q3)
+Q5: Which Subdomains? (ONLY if Q4 = yes)
+Q6: Backend Type?
+Q7: Database? (SKIP if Q6 = "No backend" AND no mobile platforms)
+Q8: State Management? (SKIP if backend-only project)
+Q9: Authentication?
+Q10: Package Preset?
+Q11: Project Visibility?
+→ Execute setup
+→ Run verification
+→ Document decisions
+```
 
-### Question 0: Reference Repository
+---
+
+## Initial Questions Workflow
+
+### Question 1: Project Name
+
+**Ask this ONLY if `$ARGUMENTS` is empty:**
+
+```
+What would you like to name your project?
+
+Enter a name using lowercase letters, numbers, and underscores.
+Example: my_awesome_app, todo_tracker, expense_manager
+```
+
+**Validation:**
+- Must match pattern: `^[a-z][a-z0-9_]*$`
+- Cannot be a Dart reserved word
+- Should be descriptive but concise
+
+---
+
+### Question 2: Reference Repository
+
+**ALWAYS ask this before other setup questions:**
 
 ```
 Are you building upon or inspired by an existing GitHub repository?
@@ -46,23 +87,42 @@ Are you building upon or inspired by an existing GitHub repository?
 
 ---
 
-## Initial Questions Workflow
-
-### Question 1: Project Type
+### Question 3: Target Platforms
 
 ```
-What type of project are you building?
+What platforms are you building for? (Select all that apply)
 
-1. Mobile App (iOS/Android)
-2. Web App (Flutter Web)
-3. Mobile + Web App
-4. Backend API only
-5. Full Stack (Frontend + Backend)
+1. Android (mobile)
+2. iOS (mobile)
+3. Web Application
+4. Windows Desktop
+5. macOS Desktop
+6. Linux Desktop
+7. Backend API only (no frontend)
 ```
 
-### Question 2: Subdomain Architecture
+**Derive project type from selections:**
 
-**Ask this if user selected Web App, Mobile + Web, or Full Stack:**
+| Selection | Derived Type |
+|-----------|--------------|
+| Only option 7 | Backend-only |
+| Android and/or iOS only | Mobile App |
+| Web only | Web App |
+| Android/iOS + Web | Mobile + Web |
+| Any desktop options | Desktop App |
+| Multiple categories | Full Stack / Multi-platform |
+
+**Store for conditional logic:**
+- `hasMobile` = Android or iOS selected
+- `hasWeb` = Web selected
+- `hasDesktop` = Any desktop selected
+- `isBackendOnly` = Only option 7 selected
+
+---
+
+### Question 4: Subdomain Architecture
+
+**SKIP this question if `hasWeb` is false.**
 
 ```
 Will you need separate admin/support dashboards or other subdomains?
@@ -78,7 +138,11 @@ Will you need separate admin/support dashboards or other subdomains?
 4. Not sure yet - Set up so I can add them later
 ```
 
-### Question 3: Subdomain Details (if Q2 = 1 or 2)
+---
+
+### Question 5: Subdomain Details
+
+**SKIP this question if Q4 = 3 (No) or Q4 was skipped.**
 
 ```
 Which subdomains do you need? (Select all that apply)
@@ -91,7 +155,9 @@ Which subdomains do you need? (Select all that apply)
 6. Other (specify)
 ```
 
-### Question 4: Backend
+---
+
+### Question 6: Backend
 
 ```
 What backend setup do you need?
@@ -102,39 +168,33 @@ What backend setup do you need?
 4. No backend - Static/local only
 ```
 
-### Question 5: Target Platforms
+**Store:** `hasBackend` = options 1, 2, or 3 selected
 
-```
-What platforms are you building for? (Select all that apply)
+---
 
-1. Android App (mobile)
-2. iOS App (mobile)
-3. Web Application
-4. Windows Desktop
-5. macOS Desktop
-6. Linux Desktop
-```
+### Question 7: Database
 
-**Based on selections, determine:**
-- **Single platform** → Single repo with platform-specific config
-- **Mobile only (Android + iOS)** → Single Flutter repo
-- **Mobile + Web** → Consider monorepo or separate repos
-- **All platforms** → Monorepo with Melos recommended
+**SKIP this question if:**
+- Q6 = "No backend" (option 4) AND `hasMobile` is false
 
-### Question 6: Database
+**Why keep for mobile:** Mobile apps often use SQLite for local storage even without a backend.
 
 ```
 What database will you use?
 
-1. PostgreSQL (recommended for production)
-2. SQLite (good for mobile-only)
+1. PostgreSQL (recommended for production backends)
+2. SQLite (good for mobile local storage)
 3. Firebase Firestore
 4. Supabase
 5. Other/External
 6. None needed
 ```
 
-### Question 7: State Management
+---
+
+### Question 8: State Management
+
+**SKIP this question if `isBackendOnly` is true.**
 
 ```
 Which state management approach do you prefer?
@@ -154,7 +214,9 @@ Which state management approach do you prefer?
 4. Not sure - Use Riverpod (default)
 ```
 
-### Question 8: Authentication
+---
+
+### Question 9: Authentication
 
 ```
 Do you need authentication?
@@ -175,7 +237,9 @@ Do you need authentication?
 4. No - Skip authentication
 ```
 
-### Question 9: Package Preset
+---
+
+### Question 10: Package Preset
 
 ```
 Which package preset fits your needs?
@@ -205,7 +269,9 @@ Which package preset fits your needs?
 - Use `templates/streaming-app.template` for project structure
 - Recommend analyzing Jellyflix repo with Repository Analyzer agent
 
-### Question 10: Project Visibility
+---
+
+### Question 11: Project Visibility
 
 ```
 Is this project private or open source?
@@ -240,6 +306,131 @@ Is this project private or open source?
 
 ---
 
+## Complete Question Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    User: "/project-new [name]"                   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Q1: Project Name                                                │
+│  → SKIP if $ARGUMENTS provided                                   │
+│  → Validate: lowercase, underscores, no reserved words           │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Q2: Reference Repository?                                       │
+│  → If yes (1,2,3): Hand off to Repository Import Agent           │
+│  → Receive analysis, patterns, learnings                         │
+│  → If no (4): Continue to Q3                                     │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Q3: Target Platforms (multi-select)                             │
+│  → Derive: hasMobile, hasWeb, hasDesktop, isBackendOnly          │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Q4: Subdomain Architecture?                                     │
+│  → SKIP if hasWeb = false                                        │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Q5: Which Subdomains?                                           │
+│  → SKIP if Q4 = "No" or Q4 was skipped                          │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Q6: Backend Type                                                │
+│  → Derive: hasBackend                                            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Q7: Database                                                    │
+│  → SKIP if hasBackend = false AND hasMobile = false              │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Q8: State Management                                            │
+│  → SKIP if isBackendOnly = true                                  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Q9: Authentication                                              │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Q10: Package Preset                                             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Q11: Project Visibility                                         │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Architecture Decision                                           │
+│  → Apply learnings from reference repo (if any)                  │
+│  → Select pattern (A, B, C, or D)                               │
+│  → Determine repo structure                                      │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Execute Setup                                                   │
+│  → Create folder structure                                       │
+│  → Generate configuration files                                  │
+│  → Set up shared packages if monorepo                           │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Verification (Agent Testing)                                    │
+│  → Static analysis                                               │
+│  → Code quality check                                            │
+│  → Build verification                                            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Documentation                                                   │
+│  → Update context.md                                             │
+│  → Record decisions in Learning System                           │
+│  → Provide next steps                                            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Hand off to Platform Installer (if ready for deployment)        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Conditional Skip Logic Summary
+
+| Question | Skip Condition | Reason |
+|----------|----------------|--------|
+| Q1: Project Name | `$ARGUMENTS` is not empty | Already provided |
+| Q4: Subdomain Architecture | `hasWeb` = false | Subdomains are web-specific |
+| Q5: Which Subdomains | Q4 = "No" or Q4 skipped | No subdomains needed |
+| Q7: Database | `hasBackend` = false AND `hasMobile` = false | No storage needed |
+| Q8: State Management | `isBackendOnly` = true | Backend doesn't use Flutter state |
+
+---
+
 ## Platform-Based Architecture Decisions
 
 ### Decision Matrix
@@ -254,6 +445,7 @@ Is this project private or open source?
 | Mobile + Web (different UX) | 2-3 | Monorepo or multi-repo |
 | Mobile + Web + Desktop | 1 | Monorepo with Melos |
 | Mobile + Web + Backend | 2+ | Monorepo or multi-repo |
+| Backend only | 1 | Dart server project |
 
 ### Multi-Repo vs Monorepo Decision
 
@@ -275,7 +467,7 @@ Is this project private or open source?
 
 ### Pattern A: Single App (Simple)
 
-**When**: Q2 = 3 (No subdomains)
+**When**: Q4 = 3 (No subdomains) or no web platform
 
 ```
 project/
@@ -292,7 +484,7 @@ project/
 
 ### Pattern B: Monorepo with Shared Deployment
 
-**When**: Q2 = 2 (Subdomains, same deployment)
+**When**: Q4 = 2 (Subdomains, same deployment)
 
 ```
 project/
@@ -312,7 +504,7 @@ project/
 
 ### Pattern C: Distributed Subdomains (Independent)
 
-**When**: Q2 = 1 (Subdomains, different servers)
+**When**: Q4 = 1 (Subdomains, different servers)
 
 Creates a multi-repo setup with shared packages:
 
@@ -336,7 +528,7 @@ packages-shared/
 
 ### Pattern D: Extensible (Add Later)
 
-**When**: Q2 = 4 (Not sure yet)
+**When**: Q4 = 4 (Not sure yet)
 
 Sets up monorepo structure but starts with single app:
 
@@ -350,6 +542,26 @@ project/
 │   └── models/
 ├── backend/
 ├── melos.yaml            # Ready for multi-app
+└── .claude/
+```
+
+### Pattern E: Backend Only
+
+**When**: `isBackendOnly` = true
+
+```
+project/
+├── bin/
+│   └── server.dart
+├── lib/
+│   ├── src/
+│   │   ├── routes/
+│   │   ├── middleware/
+│   │   ├── services/
+│   │   └── models/
+│   └── server.dart
+├── test/
+├── pubspec.yaml
 └── .claude/
 ```
 
@@ -580,86 +792,6 @@ Would you like me to create any of these additional repositories?
 
 ---
 
-## Question Flow Code
-
-Use AskUserQuestion tool with this sequence:
-
-```
-Question 0 (Reference Repo) →
-  If yes → Hand off to Repository Import Agent → Return with learnings
-Question 1 (Project Type) →
-  If web/full-stack → Question 2 (Subdomain Architecture)
-    If subdomains → Question 3 (Which subdomains)
-  → Question 4 (Backend)
-  → Question 5 (Target Platforms)
-  → Question 6 (Database)
-→ Execute appropriate setup workflow
-→ Run Agent Testing verification
-→ Update context.md
-→ Document in Learning System
-→ Provide next steps
-```
-
-## Complete Workflow Diagram
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    User: "New Project"                           │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Q0: Reference Repository?                                       │
-│  → If yes: Hand off to Repository Import Agent                   │
-│  → Receive analysis, patterns, learnings                         │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Q1-Q6: Project Requirements                                     │
-│  → Project type, subdomains, backend, platforms, database        │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Architecture Decision                                           │
-│  → Apply learnings from reference repo                           │
-│  → Select pattern (A, B, C, or D)                               │
-│  → Determine repo structure                                      │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Execute Setup                                                   │
-│  → Create folder structure                                       │
-│  → Generate configuration files                                  │
-│  → Set up shared packages if monorepo                           │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Verification (Agent Testing)                                    │
-│  → Static analysis                                               │
-│  → Code quality check                                            │
-│  → Build verification                                            │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Documentation                                                   │
-│  → Update context.md                                             │
-│  → Record decisions in Learning System                           │
-│  → Provide next steps                                            │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Hand off to Platform Installer (if ready for deployment)        │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
 ## Trigger Keywords
 
 - new project
@@ -716,6 +848,13 @@ Question 1 (Project Type) →
 - [ ] Configured for git dependencies
 - [ ] Updated context.md with architecture
 
+### Backend Only Setup
+- [ ] Created bin/server.dart
+- [ ] Created lib/ structure with routes, middleware, services
+- [ ] Set up pubspec.yaml with dart_frog/shelf
+- [ ] Created Dockerfile
+- [ ] Updated context.md
+
 ---
 
 ## Auto-Invoke
@@ -744,6 +883,7 @@ Use these templates during project setup:
 | Widget | `templates/widget.dart.template` | Reusable widget patterns |
 | Repository | `templates/repository.dart.template` | Data layer scaffold |
 | Test | `templates/test.dart.template` | Test file patterns |
+| Streaming App | `templates/streaming-app.template` | Netflix/Jellyfin IPTV app |
 
 ---
 
@@ -755,6 +895,7 @@ Reference `skills/package-presets.md` for:
 |--------|----------|
 | Minimal | Prototypes, learning |
 | Standard | Most production apps |
+| Streaming | IPTV, media apps |
 | Firebase | Firebase-backed apps |
 | Enterprise | Large-scale, monitored apps |
 | E-Commerce | Shopping, payments |

@@ -985,6 +985,7 @@ Code templates for rapid scaffolding. Located in `templates/`.
 | Page | `templates/page.dart.template` | Full page with BLoC integration |
 | Widget | `templates/widget.dart.template` | Stateless/Stateful/Consumer variants |
 | Test | `templates/test.dart.template` | Unit/BLoC/Widget/Golden tests |
+| Archon CLAUDE.md | `templates/archon-claude.md.template` | CLAUDE.md for Archon MCP task management |
 
 ### Template Usage
 
@@ -1257,7 +1258,7 @@ Future<Either<Failure, User>> signIn(String email, String password);
 |----------|-------|
 | Total Agents | 35 |
 | Total Skills | 33 |
-| Templates | 11 |
+| Templates | 12 |
 | Commands | 7 |
 | Hooks | 10 |
 | Multi-Agent Workflows | 25 |
@@ -1305,7 +1306,7 @@ Future<Either<Failure, User>> signIn(String email, String password);
 │   ├── project-fix-issue.md # /project-fix-issue
 │   ├── project-release.md   # /project-release
 │   └── project-validate.md  # /project-validate
-├── templates/               # Code templates (11 templates)
+├── templates/               # Code templates (12 templates)
 │   ├── feature.dart.template
 │   ├── bloc.dart.template
 │   ├── repository.dart.template
@@ -1316,7 +1317,8 @@ Future<Either<Failure, User>> signIn(String email, String password);
 │   ├── pubspec.yaml.template
 │   ├── analysis_options.yaml.template
 │   ├── auth-feature.template
-│   └── streaming-app.template # Netflix/Jellyfin IPTV streaming app
+│   ├── streaming-app.template # Netflix/Jellyfin IPTV streaming app
+│   └── archon-claude.md.template # CLAUDE.md for Archon MCP projects
 ├── hooks/                   # Enforcement hooks (10 hooks)
 │   ├── block-secrets.py     # Block editing secret files
 │   ├── block-dangerous.py   # Block dangerous commands

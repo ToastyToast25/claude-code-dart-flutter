@@ -8,9 +8,87 @@ alwaysApply: false
 
 Write reliable end-to-end tests using Playwright MCP server.
 
-## Usage
+## MCP Server Setup
 
-When writing E2E tests with Playwright, follow these patterns for reliable, maintainable tests.
+### Installation
+
+```bash
+# Run Playwright MCP server
+npx @playwright/mcp@latest
+```
+
+### Common Configuration Options
+
+```bash
+# Basic headed browser
+npx @playwright/mcp@latest --browser chrome
+
+# Headless mode
+npx @playwright/mcp@latest --headless
+
+# Custom viewport
+npx @playwright/mcp@latest --viewport-size 1280x720
+
+# Mobile device emulation
+npx @playwright/mcp@latest --device "iPhone 15"
+
+# Save session artifacts
+npx @playwright/mcp@latest --output-dir ./test-output --save-trace --save-video=800x600
+
+# Custom test ID attribute
+npx @playwright/mcp@latest --test-id-attribute "data-test"
+
+# Ignore HTTPS errors (dev environments)
+npx @playwright/mcp@latest --ignore-https-errors
+
+# Connect to existing browser
+npx @playwright/mcp@latest --cdp-endpoint http://localhost:9222
+
+# Use browser extension mode
+npx @playwright/mcp@latest --extension
+```
+
+### Full CLI Reference
+
+| Option | Description |
+|--------|-------------|
+| `--browser <browser>` | Browser to use: chrome, firefox, webkit, msedge |
+| `--headless` | Run in headless mode (headed by default) |
+| `--viewport-size <size>` | Viewport size, e.g., "1280x720" |
+| `--device <device>` | Device to emulate, e.g., "iPhone 15" |
+| `--user-agent <ua>` | Custom user agent string |
+| `--timeout-action <ms>` | Action timeout (default: 5000ms) |
+| `--timeout-navigation <ms>` | Navigation timeout (default: 60000ms) |
+| `--ignore-https-errors` | Ignore HTTPS certificate errors |
+| `--proxy-server <proxy>` | Proxy server, e.g., "http://myproxy:3128" |
+| `--proxy-bypass <domains>` | Domains to bypass proxy |
+| `--output-dir <path>` | Directory for output files |
+| `--save-trace` | Save Playwright trace |
+| `--save-video <size>` | Save video, e.g., "800x600" |
+| `--save-session` | Save session to output directory |
+| `--storage-state <path>` | Path to storage state file |
+| `--user-data-dir <path>` | Browser user data directory |
+| `--isolated` | Keep browser profile in memory only |
+| `--executable-path <path>` | Custom browser executable |
+| `--cdp-endpoint <endpoint>` | Connect to existing CDP endpoint |
+| `--extension` | Connect via browser extension (Chrome/Edge) |
+| `--caps <caps>` | Extra capabilities: vision, pdf |
+| `--test-id-attribute <attr>` | Test ID attribute (default: data-testid) |
+| `--init-script <path>` | JavaScript to run before page scripts |
+| `--grant-permissions <list>` | Permissions: geolocation, clipboard-read, etc. |
+| `--block-service-workers` | Block service workers |
+| `--no-sandbox` | Disable browser sandbox |
+| `--config <path>` | Path to configuration file |
+| `--port <port>` | SSE transport port |
+| `--host <host>` | Server host (default: localhost) |
+| `--allowed-hosts <hosts>` | Allowed hosts (* for all) |
+| `--allowed-origins <origins>` | Semicolon-separated allowed origins |
+| `--blocked-origins <origins>` | Semicolon-separated blocked origins |
+| `--secrets <path>` | Path to secrets file (dotenv format) |
+| `--image-responses <mode>` | Image responses: allow, omit |
+| `--shared-browser-context` | Share context between HTTP clients |
+
+---
 
 ## MCP Server Commands
 
@@ -57,15 +135,15 @@ playwright_evaluate    - Run JavaScript
 ### Avoid (Brittle)
 
 ```dart
-// 🔴 CSS classes (change frequently)
+// CSS classes (change frequently)
 '.btn-primary'
 '.MuiButton-root'
 
-// 🔴 Complex CSS paths (structure changes)
+// Complex CSS paths (structure changes)
 'div > div > button'
 '#app > main > section:nth-child(2) > button'
 
-// 🔴 XPath (hard to read/maintain)
+// XPath (hard to read/maintain)
 '//div[@class="container"]//button'
 ```
 
