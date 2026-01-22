@@ -324,7 +324,14 @@ MAILHOG_WEB_URL=http://localhost:8025
 # Prisma Studio
 PRISMA_STUDIO_URL=http://localhost:5555
 
-# Archon (if installed)
+# Supabase (local - required for Archon)
+SUPABASE_URL=http://localhost:54321
+SUPABASE_STUDIO_URL=http://localhost:54323
+SUPABASE_DB_URL=postgresql://postgres:postgres@localhost:54322/postgres
+SUPABASE_ANON_KEY=<run 'supabase status' to get key>
+SUPABASE_SERVICE_ROLE_KEY=<run 'supabase status' to get key>
+
+# Archon (requires Supabase)
 ARCHON_URL=http://localhost:8501
 QDRANT_URL=http://localhost:6333
 
@@ -1008,7 +1015,14 @@ MINIO_ACCESS_KEY=minioadmin
 MINIO_SECRET_KEY=minioadmin
 MINIO_BUCKET=uploads
 
-# Archon (if installed)
+# Supabase (local - required for Archon)
+SUPABASE_URL=http://localhost:54321
+SUPABASE_STUDIO_URL=http://localhost:54323
+SUPABASE_DB_URL=postgresql://postgres:postgres@localhost:54322/postgres
+SUPABASE_ANON_KEY=<run 'supabase status' to get key>
+SUPABASE_SERVICE_ROLE_KEY=<run 'supabase status' to get key>
+
+# Archon (requires Supabase)
 ARCHON_URL=http://localhost:8501
 QDRANT_URL=http://localhost:6333
 
@@ -1595,9 +1609,54 @@ Archon is an AI agent builder framework that enables creating sophisticated AI a
 
 - **Repository**: https://github.com/coleam00/Archon
 - **Purpose**: Build AI agents with advanced capabilities
-- **Includes**: Vector database, LLM integrations, agent orchestration
+- **Requires**: Local Supabase + Qdrant vector database + LLM API keys
+
+### Prerequisites: Local Supabase
+
+**Archon requires a local Supabase instance.** Install Supabase first:
+
+```powershell
+# Step 1: Install Supabase CLI
+npm install -g supabase
+
+# Step 2: Create supabase directory
+$supabaseDir = "supabase-local"
+if (-not (Test-Path $supabaseDir)) {
+    New-Item -ItemType Directory -Path $supabaseDir | Out-Null
+}
+cd $supabaseDir
+
+# Step 3: Initialize Supabase project
+supabase init
+
+# Step 4: Start Supabase (downloads and runs containers)
+supabase start
+
+# This will output:
+# - API URL: http://localhost:54321
+# - GraphQL URL: http://localhost:54321/graphql/v1
+# - DB URL: postgresql://postgres:postgres@localhost:54322/postgres
+# - Studio URL: http://localhost:54323
+# - Inbucket URL: http://localhost:54324
+# - anon key: eyJ...
+# - service_role key: eyJ...
+```
+
+### Supabase Services (Auto-Started)
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| API (Kong) | 54321 | REST/GraphQL API gateway |
+| Database | 54322 | PostgreSQL with extensions |
+| Studio | 54323 | Database GUI |
+| Inbucket | 54324 | Email testing |
+| Auth | 54325 | GoTrue authentication |
+| Realtime | 54326 | WebSocket subscriptions |
+| Storage | 54327 | S3-compatible file storage |
 
 ### Archon Docker Compose
+
+After Supabase is running, set up Archon:
 
 ```yaml
 # archon/docker-compose.yml (cloned from repo)
@@ -1613,6 +1672,11 @@ services:
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - SUPABASE_URL=http://host.docker.internal:54321
+      - SUPABASE_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./data:/app/data
       - ./.env:/app/.env
@@ -1633,7 +1697,7 @@ volumes:
   qdrant_data:
 ```
 
-### Auto-Install Archon Script
+### Auto-Install Archon Script (with Supabase)
 
 ```powershell
 # install-archon.ps1
@@ -1658,7 +1722,50 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# Clone or update Archon
+# Step 1: Check/Install Supabase CLI
+Write-Host ""
+Write-Host "=== Step 1: Supabase Setup ===" -ForegroundColor Cyan
+
+$supabaseCmd = Get-Command supabase -ErrorAction SilentlyContinue
+if (-not $supabaseCmd) {
+    Write-Host "Installing Supabase CLI..." -ForegroundColor Yellow
+    npm install -g supabase
+}
+
+# Step 2: Initialize and start Supabase if not running
+$supabaseDir = "supabase-local"
+if (-not (Test-Path $supabaseDir)) {
+    Write-Host "Creating Supabase project..." -ForegroundColor Yellow
+    New-Item -ItemType Directory -Path $supabaseDir | Out-Null
+    Push-Location $supabaseDir
+    supabase init
+} else {
+    Push-Location $supabaseDir
+}
+
+# Start Supabase
+Write-Host "Starting Supabase services..." -ForegroundColor Yellow
+$supabaseStatus = supabase status 2>&1
+if ($LASTEXITCODE -ne 0) {
+    supabase start
+}
+
+# Get Supabase keys
+Write-Host "Getting Supabase credentials..." -ForegroundColor Yellow
+$supabaseInfo = supabase status
+Pop-Location
+
+# Extract keys from status output (parse the output)
+$anonKey = ($supabaseInfo | Select-String "anon key:").ToString().Split(":")[1].Trim()
+$serviceKey = ($supabaseInfo | Select-String "service_role key:").ToString().Split(":")[1].Trim()
+
+Write-Host "[OK] Supabase running" -ForegroundColor Green
+Write-Host "  Studio: http://localhost:54323" -ForegroundColor Gray
+
+# Step 3: Clone or update Archon
+Write-Host ""
+Write-Host "=== Step 2: Archon Setup ===" -ForegroundColor Cyan
+
 if (Test-Path $InstallPath) {
     Write-Host "Archon directory exists. Updating..." -ForegroundColor Yellow
     Push-Location $InstallPath
@@ -1669,24 +1776,37 @@ if (Test-Path $InstallPath) {
     Push-Location $InstallPath
 }
 
-# Create .env from example if needed
-if ((Test-Path ".env.example") -and (-not (Test-Path ".env"))) {
-    Write-Host "Creating .env file from template..." -ForegroundColor Cyan
-    Copy-Item ".env.example" ".env"
-    Write-Host ""
-    Write-Host "IMPORTANT: Edit archon/.env and add your API keys:" -ForegroundColor Yellow
-    Write-Host "  - OPENAI_API_KEY=your_key_here" -ForegroundColor Gray
-    Write-Host "  - ANTHROPIC_API_KEY=your_key_here" -ForegroundColor Gray
-    Write-Host ""
-}
+# Step 4: Create .env with Supabase credentials
+Write-Host "Configuring Archon environment..." -ForegroundColor Yellow
 
-# Start Archon containers
-Write-Host "Starting Archon containers..." -ForegroundColor Cyan
+$envContent = @"
+# Archon Configuration
+# Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+
+# LLM API Keys (add your keys here)
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+
+# Supabase (local)
+SUPABASE_URL=http://localhost:54321
+SUPABASE_ANON_KEY=$anonKey
+SUPABASE_SERVICE_ROLE_KEY=$serviceKey
+
+# Qdrant Vector Database
+QDRANT_URL=http://localhost:6333
+"@
+
+$envContent | Out-File -FilePath ".env" -Encoding utf8
+Write-Host "[OK] Environment configured" -ForegroundColor Green
+
+# Step 5: Start Archon containers
+Write-Host ""
+Write-Host "=== Step 3: Starting Archon ===" -ForegroundColor Cyan
 docker compose up -d
 
 # Wait for services
 Write-Host "Waiting for Archon to be ready..." -ForegroundColor Yellow
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 15
 
 # Check status
 docker compose ps
@@ -1696,7 +1816,12 @@ Pop-Location
 Write-Host ""
 Write-Host "=== Archon Installation Complete ===" -ForegroundColor Green
 Write-Host ""
-Write-Host "Access Archon UI: http://localhost:8501" -ForegroundColor Cyan
+Write-Host "IMPORTANT: Add your LLM API keys to archon/.env" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "Access URLs:" -ForegroundColor Cyan
+Write-Host "  Archon UI:      http://localhost:8501" -ForegroundColor White
+Write-Host "  Supabase Studio: http://localhost:54323" -ForegroundColor White
+Write-Host "  Qdrant:         http://localhost:6333" -ForegroundColor White
 Write-Host "Qdrant Vector DB: http://localhost:6333" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
@@ -1754,6 +1879,9 @@ After running the dev environment setup, you'll have:
 | MinIO Console | 9001 | http://localhost:9001 | minioadmin / minioadmin |
 | Archon UI | 8501 | http://localhost:8501 | (configure API keys) |
 | Qdrant | 6333 | http://localhost:6333 | (no auth) |
+| Supabase API | 54321 | http://localhost:54321 | anon key / service key |
+| Supabase Studio | 54323 | http://localhost:54323 | (no auth) |
+| Supabase DB | 54322 | localhost:54322 | postgres / postgres |
 | Playwright MCP | 3000 | http://localhost:3000 | (visible browser, default) |
 | Playwright Headless | 3001 | http://localhost:3001 | (headless mode) |
 
