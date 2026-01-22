@@ -1,3 +1,9 @@
+---
+name: project-release
+description: Prepare and execute a new release with version bump and changelog
+argument-hint: "[major|minor|patch|version]"
+---
+
 # Release Command
 
 Prepare and execute a new release with version bump, changelog, and git operations.

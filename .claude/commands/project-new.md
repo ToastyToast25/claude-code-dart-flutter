@@ -1,3 +1,9 @@
+---
+name: project-new
+description: Start a new Dart/Flutter project with guided setup workflow
+argument-hint: "[project-name]"
+---
+
 # Start New Project
 
 Initialize a new Dart/Flutter project with the full agent workflow.

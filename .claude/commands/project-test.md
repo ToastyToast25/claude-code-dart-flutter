@@ -1,3 +1,9 @@
+---
+name: project-test
+description: Run tests with coverage reporting for Dart/Flutter projects
+argument-hint: "[unit|widget|integration|all|--coverage]"
+---
+
 # Run Tests
 
 Run the project's test suite with coverage reporting.

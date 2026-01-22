@@ -1,3 +1,9 @@
+---
+name: project-fix-issue
+description: Analyze and fix a GitHub issue by number
+argument-hint: "[issue-number]"
+---
+
 # Fix GitHub Issue
 
 Analyze and fix a GitHub issue.

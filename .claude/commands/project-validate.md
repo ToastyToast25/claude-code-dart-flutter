@@ -1,3 +1,8 @@
+---
+name: project-validate
+description: Validate that all Claude Code configuration files are consistent
+---
+
 # /project-validate - Validate Project Configuration
 
 Validate that all Claude Code configuration files are consistent and up to date.

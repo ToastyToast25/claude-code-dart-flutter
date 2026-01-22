@@ -1,3 +1,9 @@
+---
+name: project-deploy
+description: Deploy Dart/Flutter project to staging or production environment
+argument-hint: "[development|staging|production]"
+---
+
 # Deploy Project
 
 Deploy the project to a target environment.

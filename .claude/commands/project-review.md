@@ -1,3 +1,9 @@
+---
+name: project-review
+description: Perform comprehensive code review of staged changes, branch, or PR
+argument-hint: "[staged|branch|file-path|#PR]"
+---
+
 # Code Review
 
 Perform a comprehensive code review of changes.
