@@ -11,31 +11,43 @@ Hooks are Python scripts that execute at specific points in Claude's operation c
 
 ## Available Hooks
 
-### PreToolUse Hooks
+### PreToolUse Hooks (4)
 
 These run **before** a tool operation:
 
 | Hook | Purpose |
 |------|---------|
-| `block-secrets.py` | Prevents editing `.env` and secret files |
-| `block-dangerous.py` | Prevents dangerous shell commands |
-| `quality-check.py` | Checks code for quality violations |
+| `block-secrets.py` | Prevents editing `.env`, secrets, and credentials files |
+| `block-dangerous.py` | Prevents dangerous shell commands (rm -rf /, DROP DATABASE, etc.) |
+| `security-scan.py` | Scans Dart files for security vulnerabilities |
+| `pubspec-check.py` | Validates pubspec.yaml changes (version format, conflicts) |
 
-### PostToolUse Hooks
+### PostToolUse Hooks (4)
 
 These run **after** a tool operation:
 
 | Hook | Purpose |
 |------|---------|
 | `format-dart.py` | Auto-formats Dart files after editing |
+| `quality-check.py` | Checks code for quality violations (TODOs, dead code, etc.) |
+| `auto-gitignore.py` | Auto-updates .gitignore when new packages are added |
+| `registry-sync.py` | Reminds to update registry when new config files are created |
 
-### Stop Hooks
+### Stop Hooks (1)
 
 These run when a conversation ends:
 
 | Hook | Purpose |
 |------|---------|
 | `session-end.py` | Records session marker for learning system |
+
+### Standalone Scripts (1)
+
+These are run manually or by slash commands, not as hooks:
+
+| Script | Purpose |
+|--------|---------|
+| `validate-project.py` | Validates configuration consistency (used by /project-validate) |
 
 ## Hook Input Format
 
