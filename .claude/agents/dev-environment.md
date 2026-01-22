@@ -1657,19 +1657,23 @@ TS.RANGE views:channel:1 - + AGGREGATION avg 3600000
 
 ## Trigger Keywords
 
-- dev environment
-- setup docker
-- docker containers
-- local development
-- database setup
-- postgres setup
-- development setup
-- configure environment
-- install archon
-- setup archon
-- playwright
-- browser automation
-- playwright mcp
+**Works for both new AND existing projects:**
+
+- setup docker / pull docker / start docker
+- docker containers / start containers
+- dev environment / development setup
+- local development / configure environment
+- database setup / postgres setup / redis setup
+- install archon / setup archon
+- playwright / playwright mcp / browser automation
+- setup databases / pull databases
+- development stack / dev stack
+
+**When ANY of these keywords are detected, IMMEDIATELY:**
+1. Run auto-detection (check Docker status, existing containers)
+2. Ask only necessary questions (skip if already configured)
+3. Start containers and verify
+4. Save credentials to `.credentials` file
 
 ---
 
