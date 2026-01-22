@@ -286,12 +286,54 @@ Which package preset fits your needs?
 5. Custom - I'll choose packages myself
 ```
 
-**If Streaming preset selected:**
-- Use `skills/package-presets.md` Streaming preset
-- Auto-load `skills/xtream-stalker-api.md` for API patterns
-- Auto-load `skills/streaming-advanced.md` for advanced features
-- Use `templates/streaming-app.template` for project structure
-- Recommend analyzing Jellyflix repo with Repository Analyzer agent
+**If Streaming preset selected - AUTO-CLONE REFERENCE REPOS:**
+
+Execute the following IMMEDIATELY after streaming preset is selected:
+
+```powershell
+Write-Host "=== Streaming Preset: Cloning Reference Repositories ===" -ForegroundColor Cyan
+
+# Create reference repos directory
+$refDir = "reference_repos"
+if (-not (Test-Path $refDir)) {
+    New-Item -ItemType Directory -Path $refDir | Out-Null
+}
+
+# Clone Jellyflix (primary reference)
+$jellyflixPath = "$refDir/jellyflix"
+if (-not (Test-Path $jellyflixPath)) {
+    Write-Host "Cloning Jellyflix..." -ForegroundColor Yellow
+    git clone --depth 1 https://github.com/jellyflix-app/jellyflix.git $jellyflixPath
+    Write-Host "[OK] Jellyflix cloned" -ForegroundColor Green
+} else {
+    Write-Host "[OK] Jellyflix already exists" -ForegroundColor Green
+}
+
+# Clone Finamp (audio streaming reference)
+$finampPath = "$refDir/finamp"
+if (-not (Test-Path $finampPath)) {
+    Write-Host "Cloning Finamp..." -ForegroundColor Yellow
+    git clone --depth 1 https://github.com/jmshrv/finamp.git $finampPath
+    Write-Host "[OK] Finamp cloned" -ForegroundColor Green
+} else {
+    Write-Host "[OK] Finamp already exists" -ForegroundColor Green
+}
+
+Write-Host ""
+Write-Host "Reference repos ready for analysis" -ForegroundColor Green
+```
+
+**Then invoke Repository Analyzer Agent** to extract patterns:
+- Analyze folder structure and architecture
+- Extract state management patterns
+- Document API integration approaches
+- Save learnings to `.claude/learnings/repos/jellyflix.md`
+
+**After analysis, use these skills:**
+- `skills/package-presets.md` → Streaming preset packages
+- `skills/xtream-stalker-api.md` → IPTV API patterns
+- `skills/streaming-advanced.md` → Advanced features
+- `templates/streaming-app.template` → Project structure
 
 ---
 

@@ -6,43 +6,87 @@ description: Agent for analyzing external Flutter/Dart repositories and extracti
 
 Analyzes external Flutter/Dart repositories to extract architecture patterns, UI components, and features for building hybrid applications.
 
-## Purpose
+## Agent Instructions
 
-This agent clones and analyzes reference repositories (like Jellyflix, Jellyfin client) to understand their:
-- Architecture patterns
-- State management approach
-- UI/UX patterns
-- API integration methods
-- Feature implementations
+When analyzing a repository:
+1. **Check if repo exists** - Clone if not present in `reference_repos/`
+2. **Analyze structure** - Map folder organization and architecture
+3. **Extract patterns** - Document state management, API, UI patterns
+4. **Store learnings** - ALWAYS save to `.claude/learnings/repos/{repo-name}.md`
+5. **Return summary** - Provide actionable insights to calling agent
 
-## Setup Instructions
+---
 
-### Step 1: Create Analysis Workspace
+## Auto-Invoke Behavior
 
-```bash
-# Create reference repos directory
-mkdir -p reference_repos
-cd reference_repos
+**This agent is auto-invoked by Project Setup Agent when:**
+- User selects "Streaming" preset → Analyze Jellyflix, Finamp
+- User provides a reference repo URL → Clone and analyze
+
+**When auto-invoked, IMMEDIATELY:**
+
+```powershell
+# Ensure reference_repos directory exists
+$refDir = "reference_repos"
+if (-not (Test-Path $refDir)) {
+    New-Item -ItemType Directory -Path $refDir | Out-Null
+    Write-Host "Created reference_repos directory" -ForegroundColor Green
+}
+
+# Ensure learnings directory exists
+$learningsDir = ".claude/learnings/repos"
+if (-not (Test-Path $learningsDir)) {
+    New-Item -ItemType Directory -Path $learningsDir -Force | Out-Null
+    Write-Host "Created learnings directory" -ForegroundColor Green
+}
+
+# Add reference_repos to .gitignore
+if (Test-Path ".gitignore") {
+    $gitignore = Get-Content ".gitignore" -Raw
+    if ($gitignore -notmatch "reference_repos") {
+        Add-Content ".gitignore" "`n# Reference repositories (external code)`nreference_repos/"
+        Write-Host "Added reference_repos to .gitignore" -ForegroundColor Green
+    }
+}
 ```
 
-### Step 2: Clone Reference Repositories
+---
 
-For streaming app development, clone these repos:
+## Streaming Preset: Auto-Clone Repos
 
-```bash
-# Jellyflix - Flutter Jellyfin client
-git clone https://github.com/jellyflix-app/jellyflix.git
+When invoked for streaming preset, clone these repos:
 
-# Jellyfin Flutter client (if available)
-git clone https://github.com/jellyfin/jellyfin-flutter.git
+```powershell
+Write-Host "=== Cloning Streaming Reference Repos ===" -ForegroundColor Cyan
 
-# Finamp - Another Jellyfin client for reference
-git clone https://github.com/jmshrv/finamp.git
+$repos = @(
+    @{Name="jellyflix"; Url="https://github.com/jellyflix-app/jellyflix.git"; Desc="Jellyfin Flutter client"},
+    @{Name="finamp"; Url="https://github.com/jmshrv/finamp.git"; Desc="Jellyfin music client"}
+)
+
+foreach ($repo in $repos) {
+    $repoPath = "reference_repos/$($repo.Name)"
+    if (-not (Test-Path $repoPath)) {
+        Write-Host "Cloning $($repo.Name)..." -ForegroundColor Yellow
+        git clone --depth 1 $repo.Url $repoPath 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "[OK] $($repo.Name) cloned - $($repo.Desc)" -ForegroundColor Green
+        } else {
+            Write-Host "[FAIL] Could not clone $($repo.Name)" -ForegroundColor Red
+        }
+    } else {
+        Write-Host "[OK] $($repo.Name) already exists" -ForegroundColor Green
+    }
+}
 ```
 
-### Step 3: Analyze Repository Structure
+---
 
-For each cloned repo, analyze:
+## Analysis Workflow
+
+### Step 1: Analyze Repository Structure
+
+For each cloned repo, map the structure:
 
 ```
 lib/
@@ -54,18 +98,16 @@ lib/
 └── utils/           # Utilities - find helpful functions
 ```
 
-## Analysis Checklist
+### Step 2: Extract Key Information
 
-### Architecture Analysis
+**Architecture Analysis:**
+- [ ] State management (Riverpod, BLoC, Provider, GetX)
+- [ ] Folder structure and organization
+- [ ] Dependency injection approach
+- [ ] Navigation/routing pattern
+- [ ] Error handling strategy
 
-- [ ] Identify state management (Riverpod, BLoC, Provider, GetX)
-- [ ] Map folder structure and organization
-- [ ] Understand dependency injection approach
-- [ ] Document navigation/routing pattern
-- [ ] Identify error handling strategy
-
-### Feature Analysis
-
+**Feature Analysis:**
 - [ ] Authentication flow
 - [ ] Media playback implementation
 - [ ] Library browsing UI
@@ -75,8 +117,7 @@ lib/
 - [ ] User preferences/settings
 - [ ] Multi-server support
 
-### API Analysis
-
+**API Analysis:**
 - [ ] HTTP client setup (Dio, http, etc.)
 - [ ] Authentication headers
 - [ ] Request/response models
@@ -84,8 +125,7 @@ lib/
 - [ ] Retry logic
 - [ ] Caching strategy
 
-### UI/UX Analysis
-
+**UI/UX Analysis:**
 - [ ] Theme implementation
 - [ ] Responsive design patterns
 - [ ] Custom widgets
@@ -93,12 +133,136 @@ lib/
 - [ ] Loading states
 - [ ] Error states
 
+### Step 3: Store Learnings (CRITICAL)
+
+**ALWAYS save analysis to `.claude/learnings/repos/{repo-name}.md`:**
+
+```powershell
+$repoName = "jellyflix"
+$learningsPath = ".claude/learnings/repos/$repoName.md"
+
+$learningsContent = @"
+# $repoName Analysis
+
+> Auto-generated by Repository Analyzer Agent
+> Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+> Source: https://github.com/jellyflix-app/jellyflix
+
+## Overview
+
+- **Purpose**: Jellyfin client for Flutter
+- **State Management**: Riverpod
+- **Architecture**: Feature-first with clean architecture principles
+- **Key Packages**: riverpod, dio, go_router, hive
+
+## Folder Structure
+
+``````
+lib/
+├── api/              # API client and endpoints
+├── models/           # Data models with freezed
+├── providers/        # Riverpod providers
+├── screens/          # UI screens
+├── widgets/          # Reusable widgets
+└── utils/            # Utilities
+``````
+
+## Key Features
+
+| Feature | Location | Notes |
+|---------|----------|-------|
+| Video Player | lib/widgets/video_player/ | HLS/TS support |
+| Authentication | lib/providers/auth/ | JWT-based |
+| Offline Cache | lib/services/cache/ | Hive storage |
+| Downloads | lib/services/download/ | Background downloads |
+
+## Patterns to Adopt
+
+### 1. State Management Pattern
+- Uses Riverpod with code generation
+- Providers organized by feature
+- Example: `lib/providers/library_provider.dart`
+
+### 2. API Service Pattern
+- Dio-based HTTP client
+- Interceptors for auth
+- Example: `lib/api/jellyfin_api.dart`
+
+### 3. Video Player Pattern
+- Custom controls overlay
+- Supports multiple formats
+- Example: `lib/widgets/video_player/`
+
+## Patterns to Avoid
+
+### 1. [Pattern Name]
+- Reason why to avoid
+- Better alternative
+
+## Reusable Code Snippets
+
+### API Client Setup
+``````dart
+// Adapted from jellyflix API setup
+final dioProvider = Provider<Dio>((ref) {
+  final dio = Dio(BaseOptions(
+    connectTimeout: Duration(seconds: 30),
+    receiveTimeout: Duration(seconds: 30),
+  ));
+
+  dio.interceptors.add(AuthInterceptor(ref));
+  return dio;
+});
+``````
+
+### Media Card Widget
+``````dart
+// Adapted from jellyflix MediaCard
+class MediaCard extends StatelessWidget {
+  final MediaItem item;
+  final VoidCallback onTap;
+
+  // ... implementation
+}
+``````
+
+## Dependencies Worth Adopting
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| flutter_riverpod | ^2.4.9 | State management |
+| dio | ^5.4.0 | HTTP client |
+| go_router | ^13.0.1 | Navigation |
+| hive_flutter | ^1.1.0 | Local storage |
+| media_kit | ^1.1.0 | Video playback |
+
+## Integration Notes
+
+- Authentication requires Jellyfin server setup
+- Video player needs platform-specific configuration
+- Offline mode uses Hive for caching
+
+---
+
+*This analysis is for learning purposes. Do not copy code directly - understand and implement fresh.*
+"@
+
+$learningsContent | Out-File -FilePath $learningsPath -Encoding utf8
+Write-Host "[OK] Learnings saved to $learningsPath" -ForegroundColor Green
+```
+
+---
+
 ## Output Format
 
-After analysis, create a summary document:
+After analysis, create a summary in `.claude/learnings/repos/{repo-name}.md`:
 
 ```markdown
 # {Repo Name} Analysis
+
+> Auto-generated by Repository Analyzer Agent
+> Generated: {date}
+> Source: {repo url}
 
 ## Overview
 - Purpose: {description}
@@ -106,36 +270,39 @@ After analysis, create a summary document:
 - Architecture: {clean/mvvm/etc}
 
 ## Key Features
-1. Feature 1 - Location: lib/features/feature1/
-2. Feature 2 - Location: lib/features/feature2/
-
-## Reusable Components
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| VideoPlayer | lib/widgets/video_player.dart | Media playback |
-| MediaCard | lib/widgets/media_card.dart | Display media items |
-
-## API Integration
-- Client: {Dio/http}
-- Base service: lib/services/api_service.dart
-- Auth handling: lib/services/auth_service.dart
+| Feature | Location | Notes |
+|---------|----------|-------|
+| Feature 1 | lib/features/feature1/ | Description |
 
 ## Patterns to Adopt
-1. Pattern 1: Description
-2. Pattern 2: Description
+1. Pattern 1: Description + example location
 
 ## Patterns to Avoid
 1. Anti-pattern 1: Reason
-2. Anti-pattern 2: Reason
+
+## Reusable Code Snippets
+(Adapted code examples, not copy-paste)
+
+## Dependencies Worth Adopting
+| Package | Version | Purpose |
 ```
+
+---
 
 ## Usage Commands
 
 ### Analyze Single Repository
 
 ```
-Analyze the repository at ./reference_repos/jellyflix and create a summary
-of its architecture, features, and reusable patterns.
+Analyze the repository at ./reference_repos/jellyflix and save learnings
+to .claude/learnings/repos/jellyflix.md
+```
+
+### Analyze for Streaming Preset
+
+```
+Clone and analyze Jellyflix and Finamp repos for streaming app development.
+Save learnings and return summary of best patterns to adopt.
 ```
 
 ### Compare Repositories
@@ -152,21 +319,44 @@ Extract the video player implementation from ./reference_repos/jellyflix
 and document how to adapt it for our hybrid streaming app.
 ```
 
-### Generate Hybrid Architecture
+---
 
-```
-Based on analysis of jellyflix and finamp, propose a hybrid architecture
-that combines the best patterns from both for our streaming app.
-```
+## Integration with Project Setup
 
-## Integration with Streaming App
+When called by Project Setup Agent:
 
-After analysis, use findings to:
+1. **Clone repos** if not present
+2. **Analyze each repo** using the checklist
+3. **Save learnings** to `.claude/learnings/repos/`
+4. **Return summary** with:
+   - Recommended architecture
+   - Key packages to use
+   - Patterns to adopt
+   - Example code snippets
 
-1. **Define Architecture** - Adopt best practices from analyzed repos
-2. **Create Base Services** - Model API services after working implementations
-3. **Design UI Components** - Adapt existing widgets for new features
-4. **Implement Features** - Follow proven patterns for complex features
+---
+
+## Trigger Keywords
+
+- analyze repo
+- analyze repository
+- jellyflix
+- finamp
+- reference repo
+- extract patterns
+- streaming architecture
+
+---
+
+## Verification Checklist
+
+After analysis, verify:
+- [ ] Learnings file created in `.claude/learnings/repos/`
+- [ ] Learnings file contains all sections
+- [ ] `reference_repos/` added to `.gitignore`
+- [ ] No external code copied directly (only adapted examples)
+
+---
 
 ## Notes
 
@@ -174,3 +364,4 @@ After analysis, use findings to:
 - Document all extracted patterns with attribution
 - Adapt rather than copy - understand the patterns, implement fresh
 - Focus on architecture decisions, not copy-paste code
+- Always save learnings for future sessions
