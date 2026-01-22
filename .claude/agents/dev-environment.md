@@ -5,12 +5,64 @@ You are a specialized agent for setting up local development environments on Win
 ## Agent Instructions
 
 When setting up a development environment:
-1. **Check prerequisites** - Docker Desktop, WSL2, tools
-2. **Ask what services are needed** - Database, cache, etc.
-3. **Create Docker configuration** - docker-compose.yml
-4. **Set up containers** - Start and verify
-5. **Configure project connection** - Environment variables, connection strings
-6. **Verify everything works** - Test connections
+1. **AUTO-DETECT Docker status** - Check if Docker is installed and running
+2. **AUTO-DETECT running containers** - List what's already running
+3. **Ask what services are needed** - Database, cache, etc.
+4. **Create Docker configuration** - docker-compose.yml
+5. **IMMEDIATELY start containers** - No waiting, just do it
+6. **Install Archon** - AI agent builder framework
+7. **Configure project connection** - Environment variables, connection strings
+8. **Verify everything works** - Test connections
+
+---
+
+## Pre-Question: Auto-Detection (ALWAYS RUN FIRST)
+
+**Before asking ANY questions, run these detection commands:**
+
+```powershell
+# 1. Check if Docker is installed
+docker --version 2>$null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "DOCKER_STATUS: NOT_INSTALLED"
+} else {
+    Write-Host "DOCKER_STATUS: INSTALLED"
+}
+
+# 2. Check if Docker is running
+docker info 2>$null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "DOCKER_RUNNING: NO"
+} else {
+    Write-Host "DOCKER_RUNNING: YES"
+}
+
+# 3. List running containers
+docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}" 2>$null
+
+# 4. List all containers (including stopped)
+docker ps -a --format "table {{.Names}}\t{{.Image}}\t{{.Status}}" 2>$null
+
+# 5. Check for existing docker-compose.yml
+if (Test-Path "docker-compose.yml") {
+    Write-Host "COMPOSE_FILE: EXISTS"
+    Get-Content docker-compose.yml
+} else {
+    Write-Host "COMPOSE_FILE: NOT_FOUND"
+}
+
+# 6. Check for Archon
+if (Test-Path "archon" -or Test-Path "../archon") {
+    Write-Host "ARCHON_STATUS: INSTALLED"
+} else {
+    Write-Host "ARCHON_STATUS: NOT_INSTALLED"
+}
+```
+
+**Based on detection results, skip irrelevant questions:**
+- Docker installed + running → Skip to Question 2
+- Containers already running → Show what's running, ask if more needed
+- docker-compose.yml exists → Offer to use existing or create new
 
 ---
 
@@ -18,13 +70,22 @@ When setting up a development environment:
 
 ### Question 1: Current Setup
 
+**ONLY ASK IF Docker detection shows issues:**
+
 ```
 Let's set up your development environment. First, what's your current setup?
 
 1. Fresh Windows 11 - Need everything installed
+   → Will install Docker Desktop, WSL2, and configure everything
+
 2. Have Docker Desktop - Need to set up containers
+   → Will skip Docker install, go straight to containers
+
 3. Have containers running - Need to connect my project
+   → Will show running containers and help configure connection
+
 4. Not sure - Help me check what I have
+   → Will run detection and show current status
 ```
 
 ### Question 2: Services Needed
@@ -51,6 +112,123 @@ Do you need any additional development tools?
 4. Adminer (Universal DB GUI)
 5. All of the above
 6. None - CLI only
+```
+
+---
+
+## Post-Questions: Immediate Execution
+
+**After ALL questions are answered, IMMEDIATELY execute the following:**
+
+### Step 1: Install Docker if Needed
+
+If Docker is not installed, run the installation guide first.
+
+### Step 2: Start Docker if Not Running
+
+```powershell
+# Check if Docker Desktop is running
+$dockerProcess = Get-Process "Docker Desktop" -ErrorAction SilentlyContinue
+if (-not $dockerProcess) {
+    Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
+    Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+    Write-Host "Waiting for Docker to start (60 seconds max)..." -ForegroundColor Yellow
+
+    $timeout = 60
+    $elapsed = 0
+    while ($elapsed -lt $timeout) {
+        Start-Sleep -Seconds 5
+        $elapsed += 5
+        $dockerInfo = docker info 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "Docker is ready!" -ForegroundColor Green
+            break
+        }
+        Write-Host "Still waiting... ($elapsed seconds)" -ForegroundColor Yellow
+    }
+}
+```
+
+### Step 3: Create docker-compose.yml Based on Answers
+
+Generate the appropriate configuration based on user's service selections.
+
+### Step 4: Start All Containers IMMEDIATELY
+
+```powershell
+# Create necessary directories
+New-Item -ItemType Directory -Force -Path "docker/postgres/init" | Out-Null
+
+# Start all containers
+Write-Host "Starting Docker containers..." -ForegroundColor Cyan
+docker compose up -d
+
+# Wait for services to be healthy
+Write-Host "Waiting for services to be ready..." -ForegroundColor Yellow
+docker compose ps
+```
+
+### Step 5: Install Archon
+
+```powershell
+# Clone and setup Archon (AI Agent Builder)
+Write-Host "Installing Archon - AI Agent Builder Framework..." -ForegroundColor Cyan
+
+if (-not (Test-Path "archon")) {
+    git clone https://github.com/coleam00/Archon.git archon
+    cd archon
+
+    # Copy environment template
+    if (Test-Path ".env.example") {
+        Copy-Item ".env.example" ".env"
+    }
+
+    # Start Archon containers
+    docker compose up -d
+
+    cd ..
+    Write-Host "Archon installed successfully!" -ForegroundColor Green
+} else {
+    Write-Host "Archon already installed, updating..." -ForegroundColor Yellow
+    cd archon
+    git pull
+    docker compose up -d
+    cd ..
+}
+```
+
+### Step 6: Verify All Services
+
+```powershell
+Write-Host ""
+Write-Host "=== Environment Setup Complete ===" -ForegroundColor Green
+Write-Host ""
+docker compose ps
+Write-Host ""
+Write-Host "Testing connections..." -ForegroundColor Cyan
+
+# Test PostgreSQL
+$pgResult = docker compose exec -T postgres pg_isready -U dev_user 2>&1
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "[OK] PostgreSQL is ready" -ForegroundColor Green
+} else {
+    Write-Host "[FAIL] PostgreSQL not ready" -ForegroundColor Red
+}
+
+# Test Redis
+$redisResult = docker compose exec -T redis redis-cli ping 2>&1
+if ($redisResult -eq "PONG") {
+    Write-Host "[OK] Redis is ready" -ForegroundColor Green
+} else {
+    Write-Host "[FAIL] Redis not ready" -ForegroundColor Red
+}
+
+# Test Archon
+if (Test-Path "archon") {
+    Write-Host "[OK] Archon is installed" -ForegroundColor Green
+} else {
+    Write-Host "[WARN] Archon not found" -ForegroundColor Yellow
+}
 ```
 
 ---
@@ -110,7 +288,7 @@ docker compose version
 
 ## Docker Compose Configurations
 
-### Standard Development Stack (PostgreSQL + Redis + Tools)
+### Standard Development Stack (PostgreSQL + Redis + Prisma + Tools)
 
 ```yaml
 # docker-compose.yml
@@ -133,11 +311,43 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init:/docker-entrypoint-initdb.d
+      - ./prisma:/prisma  # Mount prisma schema for migrations
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dev_user -d app_development"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # ===================
+  # Prisma Studio (Database GUI)
+  # ===================
+  prisma-studio:
+    image: node:20-alpine
+    container_name: dev_prisma_studio
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      DATABASE_URL: postgresql://dev_user:dev_password@postgres:5432/app_development
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./prisma:/app/prisma
+      - ./package.json:/app/package.json
+      - prisma_node_modules:/app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+        npm install prisma @prisma/client --save-dev 2>/dev/null || true &&
+        npx prisma generate 2>/dev/null || true &&
+        npx prisma studio --port 5555 --hostname 0.0.0.0
+      "
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:5555"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # ===================
   # Redis Cache
@@ -204,10 +414,52 @@ volumes:
   postgres_data:
   redis_data:
   pgadmin_data:
+  prisma_node_modules:
 
 networks:
   default:
     name: dev_network
+```
+
+### Prisma Setup Commands (Auto-Run After Containers Start)
+
+```powershell
+# Create prisma directory if not exists
+New-Item -ItemType Directory -Force -Path "prisma" | Out-Null
+
+# Create initial schema.prisma if not exists
+if (-not (Test-Path "prisma/schema.prisma")) {
+    @"
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Add your models here
+// model User {
+//   id        Int      @id @default(autoincrement())
+//   email     String   @unique
+//   name      String?
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+"@ | Out-File -FilePath "prisma/schema.prisma" -Encoding utf8
+}
+
+# Run Prisma commands after containers are ready
+Write-Host "Setting up Prisma..." -ForegroundColor Cyan
+
+# Generate Prisma client
+npx prisma generate
+
+# Push schema to database (for development)
+npx prisma db push
+
+Write-Host "Prisma Studio available at: http://localhost:5555" -ForegroundColor Green
 ```
 
 ### PostgreSQL Only (Minimal)
@@ -763,6 +1015,175 @@ Write-Host "Run 'docker compose logs -f' to view logs" -ForegroundColor Yellow
 
 ---
 
+## Archon Installation (AI Agent Builder)
+
+Archon is an AI agent builder framework that enables creating sophisticated AI agents.
+
+### What is Archon?
+
+- **Repository**: https://github.com/coleam00/Archon
+- **Purpose**: Build AI agents with advanced capabilities
+- **Includes**: Vector database, LLM integrations, agent orchestration
+
+### Archon Docker Compose
+
+```yaml
+# archon/docker-compose.yml (cloned from repo)
+version: '3.8'
+
+services:
+  archon:
+    build: .
+    container_name: archon
+    restart: unless-stopped
+    ports:
+      - "8501:8501"   # Streamlit UI
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env
+    depends_on:
+      - qdrant
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: archon_qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"   # HTTP API
+      - "6334:6334"   # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+volumes:
+  qdrant_data:
+```
+
+### Auto-Install Archon Script
+
+```powershell
+# install-archon.ps1
+param(
+    [string]$InstallPath = "archon"
+)
+
+Write-Host "Installing Archon - AI Agent Builder Framework" -ForegroundColor Cyan
+Write-Host "Repository: https://github.com/coleam00/Archon" -ForegroundColor Gray
+Write-Host ""
+
+# Check if Git is installed
+if (!(Get-Command git -ErrorAction SilentlyContinue)) {
+    Write-Host "Git not found. Please install Git first." -ForegroundColor Red
+    exit 1
+}
+
+# Check if Docker is running
+$dockerInfo = docker info 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Docker is not running. Please start Docker Desktop first." -ForegroundColor Red
+    exit 1
+}
+
+# Clone or update Archon
+if (Test-Path $InstallPath) {
+    Write-Host "Archon directory exists. Updating..." -ForegroundColor Yellow
+    Push-Location $InstallPath
+    git pull origin main
+} else {
+    Write-Host "Cloning Archon repository..." -ForegroundColor Cyan
+    git clone https://github.com/coleam00/Archon.git $InstallPath
+    Push-Location $InstallPath
+}
+
+# Create .env from example if needed
+if ((Test-Path ".env.example") -and (-not (Test-Path ".env"))) {
+    Write-Host "Creating .env file from template..." -ForegroundColor Cyan
+    Copy-Item ".env.example" ".env"
+    Write-Host ""
+    Write-Host "IMPORTANT: Edit archon/.env and add your API keys:" -ForegroundColor Yellow
+    Write-Host "  - OPENAI_API_KEY=your_key_here" -ForegroundColor Gray
+    Write-Host "  - ANTHROPIC_API_KEY=your_key_here" -ForegroundColor Gray
+    Write-Host ""
+}
+
+# Start Archon containers
+Write-Host "Starting Archon containers..." -ForegroundColor Cyan
+docker compose up -d
+
+# Wait for services
+Write-Host "Waiting for Archon to be ready..." -ForegroundColor Yellow
+Start-Sleep -Seconds 10
+
+# Check status
+docker compose ps
+
+Pop-Location
+
+Write-Host ""
+Write-Host "=== Archon Installation Complete ===" -ForegroundColor Green
+Write-Host ""
+Write-Host "Access Archon UI: http://localhost:8501" -ForegroundColor Cyan
+Write-Host "Qdrant Vector DB: http://localhost:6333" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Next steps:" -ForegroundColor Yellow
+Write-Host "  1. Edit archon/.env with your API keys" -ForegroundColor Gray
+Write-Host "  2. Restart: cd archon && docker compose restart" -ForegroundColor Gray
+Write-Host "  3. Open http://localhost:8501 in browser" -ForegroundColor Gray
+```
+
+### Archon Service URLs
+
+After installation:
+
+| Service | URL | Purpose |
+|---------|-----|---------|
+| Archon UI | http://localhost:8501 | Main Streamlit interface |
+| Qdrant API | http://localhost:6333 | Vector database HTTP API |
+| Qdrant gRPC | localhost:6334 | Vector database gRPC |
+
+### Archon Commands
+
+```powershell
+# Start Archon
+cd archon && docker compose up -d
+
+# Stop Archon
+cd archon && docker compose down
+
+# View logs
+cd archon && docker compose logs -f
+
+# Restart after .env changes
+cd archon && docker compose restart
+
+# Update Archon
+cd archon && git pull && docker compose up -d --build
+```
+
+---
+
+## Complete Environment Summary
+
+After running the dev environment setup, you'll have:
+
+| Service | Port | URL/Connection | Credentials |
+|---------|------|----------------|-------------|
+| PostgreSQL | 5432 | localhost:5432 | dev_user / dev_password |
+| Prisma Studio | 5555 | http://localhost:5555 | (uses PostgreSQL) |
+| pgAdmin | 5050 | http://localhost:5050 | admin@localhost.com / admin |
+| Redis | 6379 | localhost:6379 | (no auth) |
+| Redis Commander | 8081 | http://localhost:8081 | (no auth) |
+| Mailhog SMTP | 1025 | localhost:1025 | (no auth) |
+| Mailhog UI | 8025 | http://localhost:8025 | (no auth) |
+| MinIO API | 9000 | localhost:9000 | minioadmin / minioadmin |
+| MinIO Console | 9001 | http://localhost:9001 | minioadmin / minioadmin |
+| Archon UI | 8501 | http://localhost:8501 | (configure API keys) |
+| Qdrant | 6333 | http://localhost:6333 | (no auth) |
+
+---
+
 ## Trigger Keywords
 
 - dev environment
@@ -773,6 +1194,8 @@ Write-Host "Run 'docker compose logs -f' to view logs" -ForegroundColor Yellow
 - postgres setup
 - development setup
 - configure environment
+- install archon
+- setup archon
 
 ---
 

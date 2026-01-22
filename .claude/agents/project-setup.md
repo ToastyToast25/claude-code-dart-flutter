@@ -186,11 +186,24 @@ Which package preset fits your needs?
 2. Standard (recommended) - Production-ready
    → Networking, storage, forms, DI, code gen
 
-3. Enterprise - Full monitoring suite
+3. Streaming (Jellyfin/Netflix style) - IPTV & Media Apps
+   → Video players, Xtream/Stalker API, M3U parsing
+   → Watch history, downloads, parental controls
+   → TV/Firestick D-pad navigation
+   → Multi-server support, EPG integration
+
+4. Enterprise - Full monitoring suite
    → Sentry, analytics, feature flags, offline support
 
-4. Custom - I'll choose packages myself
+5. Custom - I'll choose packages myself
 ```
+
+**If Streaming preset selected:**
+- Use `skills/package-presets.md` Streaming preset
+- Auto-load `skills/xtream-stalker-api.md` for API patterns
+- Auto-load `skills/streaming-advanced.md` for advanced features
+- Use `templates/streaming-app.template` for project structure
+- Recommend analyzing Jellyflix repo with Repository Analyzer agent
 
 ### Question 10: Project Visibility
 
