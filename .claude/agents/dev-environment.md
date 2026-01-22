@@ -350,14 +350,16 @@ services:
       retries: 3
 
   # ===================
-  # Redis Cache
+  # Redis Stack (Redis + Modules)
+  # Includes: RediSearch, RedisJSON, RedisGraph, RedisTimeSeries, RedisBloom
   # ===================
   redis:
-    image: redis:7-alpine
-    container_name: dev_redis
+    image: redis/redis-stack:latest
+    container_name: dev_redis_stack
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "6379:6379"   # Redis
+      - "8001:8001"   # RedisInsight (built-in GUI)
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
@@ -1173,14 +1175,47 @@ After running the dev environment setup, you'll have:
 | PostgreSQL | 5432 | localhost:5432 | dev_user / dev_password |
 | Prisma Studio | 5555 | http://localhost:5555 | (uses PostgreSQL) |
 | pgAdmin | 5050 | http://localhost:5050 | admin@localhost.com / admin |
-| Redis | 6379 | localhost:6379 | (no auth) |
-| Redis Commander | 8081 | http://localhost:8081 | (no auth) |
+| Redis Stack | 6379 | localhost:6379 | (no auth) |
+| RedisInsight | 8001 | http://localhost:8001 | (no auth, built into Stack) |
+| Redis Commander | 8081 | http://localhost:8081 | (no auth, optional) |
 | Mailhog SMTP | 1025 | localhost:1025 | (no auth) |
 | Mailhog UI | 8025 | http://localhost:8025 | (no auth) |
 | MinIO API | 9000 | localhost:9000 | minioadmin / minioadmin |
 | MinIO Console | 9001 | http://localhost:9001 | minioadmin / minioadmin |
 | Archon UI | 8501 | http://localhost:8501 | (configure API keys) |
 | Qdrant | 6333 | http://localhost:6333 | (no auth) |
+
+### Redis Stack Modules
+
+Redis Stack includes these modules out of the box:
+
+| Module | Purpose | Example Use |
+|--------|---------|-------------|
+| **RediSearch** | Full-text search & secondary indexing | Search channels, EPG data |
+| **RedisJSON** | Native JSON storage | Store complex objects |
+| **RedisGraph** | Graph database | User relationships, recommendations |
+| **RedisTimeSeries** | Time-series data | Watch analytics, metrics |
+| **RedisBloom** | Probabilistic data structures | Deduplication, rate limiting |
+
+**Redis Stack CLI Examples:**
+
+```bash
+# Connect to Redis Stack
+docker compose exec redis redis-cli
+
+# JSON operations
+JSON.SET user:1 $ '{"name":"John","email":"john@example.com"}'
+JSON.GET user:1 $.name
+
+# Search operations (after creating index)
+FT.CREATE idx:channels ON JSON PREFIX 1 channel: SCHEMA $.name AS name TEXT $.category AS category TAG
+FT.SEARCH idx:channels "@category:{sports}"
+
+# Time series
+TS.CREATE views:channel:1 RETENTION 86400000
+TS.ADD views:channel:1 * 150
+TS.RANGE views:channel:1 - + AGGREGATION avg 3600000
+```
 
 ---
 
