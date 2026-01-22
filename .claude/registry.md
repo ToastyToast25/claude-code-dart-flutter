@@ -1298,13 +1298,13 @@ Future<Either<Failure, User>> signIn(String email, String password);
 │   ├── flutter-patterns.md  # Flutter best practices
 │   └── packages.md          # Recommended packages
 ├── commands/                # Slash commands (7 commands)
-│   ├── new.md               # /project:new
-│   ├── deploy.md            # /project:deploy
-│   ├── test.md              # /project:test
-│   ├── review.md            # /project:review
-│   ├── fix-issue.md         # /project:fix-issue
-│   ├── release.md           # /project:release
-│   └── validate.md          # /project:validate
+│   ├── project-new.md       # /project-new
+│   ├── project-deploy.md    # /project-deploy
+│   ├── project-test.md      # /project-test
+│   ├── project-review.md    # /project-review
+│   ├── project-fix-issue.md # /project-fix-issue
+│   ├── project-release.md   # /project-release
+│   └── project-validate.md  # /project-validate
 ├── templates/               # Code templates (11 templates)
 │   ├── feature.dart.template
 │   ├── bloc.dart.template

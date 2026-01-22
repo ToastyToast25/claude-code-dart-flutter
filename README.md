@@ -13,7 +13,7 @@ cd claude-code-dart-flutter
 claude
 
 # Run a slash command
-/project:new
+/project-new
 ```
 
 ## What's Included
@@ -30,13 +30,13 @@ claude
 
 | Command | Description |
 |---------|-------------|
-| `/project:new` | Start a new project with guided setup |
-| `/project:test` | Run tests with coverage reporting |
-| `/project:review` | Comprehensive code review |
-| `/project:deploy [env]` | Deploy to staging/production |
-| `/project:fix-issue [#]` | Fix a GitHub issue by number |
-| `/project:release` | Create a new release with versioning |
-| `/project:validate` | Validate project configuration consistency |
+| `/project-new` | Start a new project with guided setup |
+| `/project-test` | Run tests with coverage reporting |
+| `/project-review` | Comprehensive code review |
+| `/project-deploy [env]` | Deploy to staging/production |
+| `/project-fix-issue [#]` | Fix a GitHub issue by number |
+| `/project-release` | Create a new release with versioning |
+| `/project-validate` | Validate project configuration consistency |
 
 ## Key Agents
 
@@ -155,11 +155,11 @@ See [input-security.md](.claude/skills/input-security.md) for implementation det
 
 ## Project Maintenance
 
-Keep configuration files synchronized with `/project:validate`:
+Keep configuration files synchronized with `/project-validate`:
 
 ```bash
 # Check for configuration issues
-/project:validate
+/project-validate
 
 # Output:
 # === Project Validation Report ===
@@ -197,7 +197,7 @@ at lib/features/auth/presentation/bloc/auth_bloc.dart:42
 ### Deploy to Production
 
 ```
-/project:deploy production
+/project-deploy production
 ```
 
 ### Code Review

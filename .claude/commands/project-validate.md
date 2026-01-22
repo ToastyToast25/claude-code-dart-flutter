@@ -1,11 +1,11 @@
-# /project:validate - Validate Project Configuration
+# /project-validate - Validate Project Configuration
 
 Validate that all Claude Code configuration files are consistent and up to date.
 
 ## Usage
 
 ```
-/project:validate
+/project-validate
 ```
 
 ## What This Command Does
@@ -113,7 +113,7 @@ After reporting issues, offer to auto-fix:
 
 ## When to Run
 
-Run `/project:validate` after:
+Run `/project-validate` after:
 - Adding new agents, skills, or commands
 - Modifying settings.json
 - Before committing changes

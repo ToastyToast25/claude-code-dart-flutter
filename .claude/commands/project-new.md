@@ -4,7 +4,7 @@ Initialize a new Dart/Flutter project with the full agent workflow.
 
 ## Usage
 ```
-/project:new [project-name]
+/project-new [project-name]
 ```
 
 ## Workflow
@@ -43,7 +43,7 @@ Execute the following steps:
 ## Example
 
 ```
-/project:new my-app
+/project-new my-app
 ```
 
 This will start the interactive project setup workflow.

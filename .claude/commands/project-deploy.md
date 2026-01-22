@@ -4,7 +4,7 @@ Deploy the project to a target environment.
 
 ## Usage
 ```
-/project:deploy [environment]
+/project-deploy [environment]
 ```
 
 ## Arguments
@@ -40,13 +40,13 @@ Deploy the project to a target environment.
 
 ```
 # Deploy to staging
-/project:deploy staging
+/project-deploy staging
 
 # Deploy to production server
-/project:deploy production 192.168.1.100
+/project-deploy production 192.168.1.100
 
 # Deploy to Docker
-/project:deploy docker
+/project-deploy docker
 ```
 
 ## Related Agents

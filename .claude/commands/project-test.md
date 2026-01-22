@@ -4,7 +4,7 @@ Run the project's test suite with coverage reporting.
 
 ## Usage
 ```
-/project:test [options]
+/project-test [options]
 ```
 
 ## Arguments
@@ -53,13 +53,13 @@ Run the project's test suite with coverage reporting.
 
 ```
 # Run all tests
-/project:test all
+/project-test all
 
 # Run with coverage
-/project:test --coverage
+/project-test --coverage
 
 # Run specific test
-/project:test test/features/auth/auth_test.dart
+/project-test test/features/auth/auth_test.dart
 ```
 
 ## Coverage Thresholds

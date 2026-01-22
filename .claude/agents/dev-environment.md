@@ -412,11 +412,37 @@ services:
       - "1025:1025"  # SMTP
       - "8025:8025"  # Web UI
 
+  # ===================
+  # Playwright MCP (Browser Automation for AI)
+  # GitHub: https://github.com/microsoft/playwright-mcp
+  # ===================
+  playwright-mcp:
+    build:
+      context: https://github.com/microsoft/playwright-mcp.git#main
+      dockerfile: Dockerfile
+    container_name: dev_playwright_mcp
+    restart: unless-stopped
+    ports:
+      - "3000:3000"   # SSE transport port
+    environment:
+      - NODE_ENV=production
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    volumes:
+      - playwright_output:/tmp/playwright-output
+      - ./playwright-config:/app/config  # Custom config mount
+    command: ["node", "cli.js", "--headless", "--browser", "chromium", "--port", "3000", "--host", "0.0.0.0"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   postgres_data:
   redis_data:
   pgadmin_data:
   prisma_node_modules:
+  playwright_output:
 
 networks:
   default:
@@ -1017,6 +1043,103 @@ Write-Host "Run 'docker compose logs -f' to view logs" -ForegroundColor Yellow
 
 ---
 
+## Playwright MCP (Browser Automation for AI)
+
+Playwright MCP provides browser automation capabilities for AI agents via the Model Context Protocol.
+
+### What is Playwright MCP?
+
+- **Repository**: https://github.com/microsoft/playwright-mcp
+- **Purpose**: Enable AI agents to interact with web browsers
+- **Features**: Headless Chrome/Chromium, screenshots, navigation, form filling
+
+### Playwright MCP Configuration
+
+The service runs in headless mode with Chromium by default:
+
+```yaml
+playwright-mcp:
+  build:
+    context: https://github.com/microsoft/playwright-mcp.git#main
+    dockerfile: Dockerfile
+  container_name: dev_playwright_mcp
+  ports:
+    - "3000:3000"   # SSE transport
+  environment:
+    - NODE_ENV=production
+    - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+  volumes:
+    - playwright_output:/tmp/playwright-output
+    - ./playwright-config:/app/config
+  command: ["node", "cli.js", "--headless", "--browser", "chromium", "--port", "3000", "--host", "0.0.0.0"]
+```
+
+### Playwright MCP Service URLs
+
+| Service | URL | Purpose |
+|---------|-----|---------|
+| Playwright MCP | http://localhost:3000 | SSE transport for AI agents |
+| Output Directory | /tmp/playwright-output | Screenshots, downloads |
+
+### Playwright MCP Commands
+
+```powershell
+# Check Playwright MCP status
+docker compose logs playwright-mcp
+
+# Restart Playwright MCP
+docker compose restart playwright-mcp
+
+# View screenshots/output
+docker compose exec playwright-mcp ls -la /tmp/playwright-output
+```
+
+### MCP Client Configuration
+
+To use Playwright MCP with Claude Code or other MCP clients, add to your MCP config:
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "url": "http://localhost:3000/sse",
+      "transport": "sse"
+    }
+  }
+}
+```
+
+### Playwright MCP Capabilities
+
+| Capability | Description |
+|------------|-------------|
+| **browser_navigate** | Navigate to URLs |
+| **browser_click** | Click elements |
+| **browser_type** | Type text into inputs |
+| **browser_screenshot** | Capture screenshots |
+| **browser_scroll** | Scroll the page |
+| **browser_select** | Select dropdown options |
+| **browser_hover** | Hover over elements |
+| **browser_evaluate** | Execute JavaScript |
+
+### Custom Configuration
+
+Create `playwright-config/config.json` for custom settings:
+
+```json
+{
+  "browser": "chromium",
+  "headless": true,
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "timeout": 30000
+}
+```
+
+---
+
 ## Archon Installation (AI Agent Builder)
 
 Archon is an AI agent builder framework that enables creating sophisticated AI agents.
@@ -1184,6 +1307,7 @@ After running the dev environment setup, you'll have:
 | MinIO Console | 9001 | http://localhost:9001 | minioadmin / minioadmin |
 | Archon UI | 8501 | http://localhost:8501 | (configure API keys) |
 | Qdrant | 6333 | http://localhost:6333 | (no auth) |
+| Playwright MCP | 3000 | http://localhost:3000 | (no auth) |
 
 ### Redis Stack Modules
 
@@ -1231,6 +1355,9 @@ TS.RANGE views:channel:1 - + AGGREGATION avg 3600000
 - configure environment
 - install archon
 - setup archon
+- playwright
+- browser automation
+- playwright mcp
 
 ---
 

@@ -5,7 +5,7 @@ Prepare and execute a new release with version bump, changelog, and git operatio
 ## Usage
 
 ```
-/project:release [version_type]
+/project-release [version_type]
 ```
 
 ## Arguments
@@ -103,7 +103,7 @@ gh release create v${VERSION} \
 ## Example Session
 
 ```
-User: /project:release minor
+User: /project-release minor
 
 Claude:
 📋 Pre-Release Checks

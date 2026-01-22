@@ -259,10 +259,13 @@ On each request, consult `.claude/registry.md` to determine which agent(s) to lo
 
 ### Slash Commands
 
-- `/project:new` - Start new project workflow
-- `/project:deploy` - Deploy to server
-- `/project:test` - Run full test suite
-- `/project:review` - Code review workflow
+- `/project-new` - Start new project workflow
+- `/project-deploy` - Deploy to server
+- `/project-test` - Run full test suite
+- `/project-review` - Code review workflow
+- `/project-fix-issue` - Fix a GitHub issue
+- `/project-release` - Create a new release
+- `/project-validate` - Validate configuration
 
 ## Key Principles
 

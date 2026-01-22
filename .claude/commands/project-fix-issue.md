@@ -4,7 +4,7 @@ Analyze and fix a GitHub issue.
 
 ## Usage
 ```
-/project:fix-issue [issue-number]
+/project-fix-issue [issue-number]
 ```
 
 ## Arguments
@@ -53,10 +53,10 @@ Analyze and fix a GitHub issue.
 
 ```
 # Fix issue #42
-/project:fix-issue 42
+/project-fix-issue 42
 
 # With full URL
-/project:fix-issue https://github.com/owner/repo/issues/42
+/project-fix-issue https://github.com/owner/repo/issues/42
 ```
 
 ## Commit Message Format

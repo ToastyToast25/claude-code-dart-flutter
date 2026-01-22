@@ -4,7 +4,7 @@ Perform a comprehensive code review of changes.
 
 ## Usage
 ```
-/project:review [scope]
+/project-review [scope]
 ```
 
 ## Arguments
@@ -63,16 +63,16 @@ Perform a comprehensive code review of changes.
 
 ```
 # Review staged changes
-/project:review staged
+/project-review staged
 
 # Review current branch vs main
-/project:review branch
+/project-review branch
 
 # Review specific file
-/project:review lib/features/auth/auth_service.dart
+/project-review lib/features/auth/auth_service.dart
 
 # Review GitHub PR
-/project:review #123
+/project-review #123
 ```
 
 ## Related Agents

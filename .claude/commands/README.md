@@ -6,25 +6,26 @@ Custom slash commands available in this project.
 
 | Command | Description |
 |---------|-------------|
-| `/project:new` | Start a new project with guided setup |
-| `/project:deploy` | Deploy to any environment |
-| `/project:test` | Run tests with coverage |
-| `/project:review` | Comprehensive code review |
-| `/project:fix-issue` | Fix a GitHub issue |
-| `/project:release` | Prepare and execute a release |
+| `/project-new` | Start a new project with guided setup |
+| `/project-deploy` | Deploy to any environment |
+| `/project-test` | Run tests with coverage |
+| `/project-review` | Comprehensive code review |
+| `/project-fix-issue` | Fix a GitHub issue |
+| `/project-release` | Prepare and execute a release |
+| `/project-validate` | Validate project configuration consistency |
 
 ## How Commands Work
 
-Commands are Markdown files in this directory. When you type `/project:command-name`, Claude loads the corresponding `command-name.md` file and follows its instructions.
+Commands are Markdown files in this directory. When you type `/project-command-name`, Claude loads the corresponding `project-command-name.md` file and follows its instructions.
 
 ## Using Arguments
 
 Commands can accept arguments via `$ARGUMENTS`:
 
 ```
-/project:test unit           # $ARGUMENTS = "unit"
-/project:fix-issue 42        # $ARGUMENTS = "42"
-/project:deploy production   # $ARGUMENTS = "production"
+/project-test unit           # $ARGUMENTS = "unit"
+/project-fix-issue 42        # $ARGUMENTS = "42"
+/project-deploy production   # $ARGUMENTS = "production"
 ```
 
 ## Creating New Commands
@@ -46,7 +47,7 @@ Brief description of what this command does.
 
 ## Usage
 \`\`\`
-/project:command-name [arguments]
+/project-command-name [arguments]
 \`\`\`
 
 ## Arguments
@@ -62,8 +63,8 @@ Brief description of what this command does.
 ## Examples
 
 \`\`\`
-/project:command-name arg1
-/project:command-name arg2
+/project-command-name arg1
+/project-command-name arg2
 \`\`\`
 
 ## Related Agents
