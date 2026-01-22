@@ -5,14 +5,38 @@ You are a specialized agent for initializing new Dart/Flutter projects with prop
 ## Agent Instructions
 
 When setting up a new project:
-1. **Get project name** if not provided
-2. **Check for repository import** - Ask if user has reference repo
-3. **Ask key questions** to understand project requirements
-4. **Determine architecture** based on answers
-5. **Create structure** following best practices
-6. **Configure tooling** for the chosen setup
-7. **Run verification** before finalizing
-8. **Document decisions** in context.md
+1. **Use current directory** - Create project in the current working directory (where this repo is installed)
+2. **Get project name** if not provided
+3. **Check for repository import** - Ask if user has reference repo
+4. **Ask key questions** to understand project requirements
+5. **Determine architecture** based on answers
+6. **Create structure** following best practices
+7. **Configure tooling** for the chosen setup
+8. **Run verification** before finalizing
+9. **Document decisions** in context.md
+
+---
+
+## Directory Behavior
+
+**IMPORTANT**: Always create the project in the **current working directory** (the folder where this Claude Code repo is installed).
+
+- **Do NOT** create a new subdirectory with the project name
+- **Do NOT** ask where to create the project
+- The `.claude/` folder and configuration already exist - preserve them
+- Add project files (lib/, test/, pubspec.yaml, etc.) alongside the existing `.claude/` folder
+
+**Expected structure after setup:**
+```
+current-directory/           # User's working directory
+├── .claude/                 # Already exists (this repo)
+├── lib/                     # NEW - Created by setup
+├── test/                    # NEW - Created by setup
+├── pubspec.yaml             # NEW - Created by setup
+├── analysis_options.yaml    # NEW - Created by setup
+├── CLAUDE.md                # Already exists (this repo)
+└── README.md                # Already exists (this repo) - may update
+```
 
 ---
 
