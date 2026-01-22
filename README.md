@@ -16,13 +16,31 @@ claude
 /project-new
 ```
 
+### Updating to Latest Version
+
+```bash
+# Pull latest changes (preserves your local modifications)
+git pull --rebase origin master
+
+# Or if you have local changes you want to keep
+git stash
+git pull origin master
+git stash pop
+
+# Force update (overwrites local changes - use with caution)
+git fetch origin
+git reset --hard origin/master
+```
+
+**Note**: If you've customized agents, skills, or templates, consider keeping them in a separate branch or backing up before force updating.
+
 ## What's Included
 
 | Component | Count | Description |
 |-----------|-------|-------------|
 | **Agents** | 35 | Specialized assistants for different tasks |
 | **Skills** | 33 | Reusable code patterns with auto-activation |
-| **Templates** | 11 | Boilerplate for features, BLoCs, pages, etc. |
+| **Templates** | 12 | Boilerplate for features, BLoCs, pages, etc. |
 | **Commands** | 7 | Slash commands for common workflows |
 | **Hooks** | 10 | Enforcement scripts for code quality |
 
@@ -104,7 +122,7 @@ Skills automatically activate when you work on matching files:
 │   ├── deploy.md
 │   ├── validate.md
 │   └── ... (3 more)
-├── templates/           # 11 code templates
+├── templates/           # 12 code templates
 │   ├── feature.dart.template
 │   ├── bloc.dart.template
 │   ├── page.dart.template
