@@ -20,8 +20,16 @@ When analyzing a repository:
 ## Auto-Invoke Behavior
 
 **This agent is auto-invoked by Project Setup Agent when:**
-- User selects "Streaming" preset → Analyze Jellyflix, Finamp
+- User selects "Streaming" preset → Clone and analyze all streaming repos
 - User provides a reference repo URL → Clone and analyze
+
+**For EXISTING PROJECTS, this agent activates when user says:**
+- "pull streaming repos" / "clone streaming repos"
+- "get reference repos" / "download streaming references"
+- "analyze jellyflix" / "analyze finamp" / "analyze iptvnator"
+- "streaming patterns" / "streaming architecture"
+
+**When activated for existing project, run the same clone script as new projects.**
 
 **When auto-invoked, IMMEDIATELY:**
 
@@ -340,13 +348,26 @@ When called by Project Setup Agent:
 
 ## Trigger Keywords
 
-- analyze repo
-- analyze repository
+**For new projects (via /project-new):**
+- streaming preset (auto-triggered)
+
+**For existing projects (manual trigger):**
+- pull streaming repos
+- clone streaming repos
+- get reference repos
+- download streaming references
+- analyze streaming patterns
 - jellyflix
 - finamp
+- iptvnator
+- jellyfin patterns
 - reference repo
 - extract patterns
 - streaming architecture
+- analyze repo
+- analyze repository
+
+**When ANY of these keywords are detected in an existing project, IMMEDIATELY clone the streaming reference repos using the script in "Streaming Preset: Auto-Clone Repos" section.**
 
 ---
 
