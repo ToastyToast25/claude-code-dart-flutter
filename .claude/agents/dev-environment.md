@@ -328,8 +328,9 @@ PRISMA_STUDIO_URL=http://localhost:5555
 ARCHON_URL=http://localhost:8501
 QDRANT_URL=http://localhost:6333
 
-# Playwright MCP (if installed)
+# Playwright MCP
 PLAYWRIGHT_MCP_URL=http://localhost:3000
+PLAYWRIGHT_MCP_HEADLESS_URL=http://localhost:3001
 "@
 
 $credentialsContent | Out-File -FilePath ".credentials" -Encoding utf8
@@ -366,26 +367,37 @@ if (Test-Path $mcpJsonPath) {
     $mcpConfig = Get-Content $mcpJsonPath -Raw | ConvertFrom-Json
     $mcpModified = $false
 
-    # Check if Playwright MCP is running
+    # Check if Playwright MCP container is running (visible browser mode)
     try {
         $playwrightCheck = Invoke-WebRequest -Uri "http://localhost:3000" -TimeoutSec 3 -UseBasicParsing -ErrorAction Stop
         if ($mcpConfig.disabledMcpServers -contains "playwright") {
-            # Move from disabled to enabled
             $mcpConfig.disabledMcpServers = @($mcpConfig.disabledMcpServers | Where-Object { $_ -ne "playwright" })
             $mcpConfig.mcpServers | Add-Member -NotePropertyName "playwright" -NotePropertyValue $mcpConfig.availableServers.playwright -Force
             $mcpModified = $true
-            Write-Host "[OK] Playwright MCP enabled in .mcp.json" -ForegroundColor Green
+            Write-Host "[OK] Playwright MCP (visible) enabled in .mcp.json" -ForegroundColor Green
         }
     } catch {
-        Write-Host "[SKIP] Playwright MCP not running - keeping disabled" -ForegroundColor Yellow
+        Write-Host "[SKIP] Playwright MCP not running - start with 'docker compose up -d playwright-mcp'" -ForegroundColor Yellow
     }
 
-    # Check if Archon is running
+    # Check if Playwright headless container is running
+    try {
+        $playwrightHeadlessCheck = Invoke-WebRequest -Uri "http://localhost:3001" -TimeoutSec 3 -UseBasicParsing -ErrorAction Stop
+        if ($mcpConfig.disabledMcpServers -contains "playwright-headless") {
+            $mcpConfig.disabledMcpServers = @($mcpConfig.disabledMcpServers | Where-Object { $_ -ne "playwright-headless" })
+            $mcpConfig.mcpServers | Add-Member -NotePropertyName "playwright-headless" -NotePropertyValue $mcpConfig.availableServers."playwright-headless" -Force
+            $mcpModified = $true
+            Write-Host "[OK] Playwright MCP (headless) enabled in .mcp.json" -ForegroundColor Green
+        }
+    } catch {
+        Write-Host "[SKIP] Playwright headless not running - start with 'docker compose up -d playwright-mcp-headless'" -ForegroundColor Yellow
+    }
+
+    # Check if Archon is running (SSE-based, needs container)
     if (Test-Path "archon") {
         try {
             $archonCheck = Invoke-WebRequest -Uri "http://localhost:8501" -TimeoutSec 3 -UseBasicParsing -ErrorAction Stop
             if ($mcpConfig.disabledMcpServers -contains "archon") {
-                # Move from disabled to enabled
                 $mcpConfig.disabledMcpServers = @($mcpConfig.disabledMcpServers | Where-Object { $_ -ne "archon" })
                 $mcpConfig.mcpServers | Add-Member -NotePropertyName "archon" -NotePropertyValue $mcpConfig.availableServers.archon -Force
                 $mcpModified = $true
@@ -424,7 +436,8 @@ if ($allPassed) {
     }
     Write-Host ""
     Write-Host "MCP Servers (restart Claude Code if just enabled):" -ForegroundColor Cyan
-    Write-Host "  Playwright:    http://localhost:3000" -ForegroundColor White
+    Write-Host "  Playwright:    http://localhost:3000 (visible browser)" -ForegroundColor White
+    Write-Host "  Playwright:    http://localhost:3001 (headless)" -ForegroundColor White
     Write-Host "  Archon:        http://localhost:8501/mcp" -ForegroundColor White
 } else {
     Write-Host "=== SETUP INCOMPLETE ===" -ForegroundColor Red
@@ -617,25 +630,53 @@ services:
 
   # ===================
   # Playwright MCP (Browser Automation for AI)
+  # Visible browser mode (default) - great for debugging/demos
   # GitHub: https://github.com/microsoft/playwright-mcp
   # ===================
   playwright-mcp:
-    build:
-      context: https://github.com/microsoft/playwright-mcp.git#main
-      dockerfile: Dockerfile
+    image: mcr.microsoft.com/playwright:v1.50.0-noble
     container_name: dev_playwright_mcp
     restart: unless-stopped
     ports:
       - "3000:3000"   # SSE transport port
     environment:
       - NODE_ENV=production
-      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+      - DISPLAY=:99
     volumes:
       - playwright_output:/tmp/playwright-output
-      - ./playwright-config:/app/config  # Custom config mount
-    command: ["node", "cli.js", "--headless", "--browser", "chromium", "--port", "3000", "--host", "0.0.0.0"]
+    working_dir: /app
+    command: >
+      bash -c "
+        npm install @playwright/mcp@latest &&
+        npx @playwright/mcp@latest --port 3000 --host 0.0.0.0
+      "
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===================
+  # Playwright MCP Headless (for automated/CI tasks)
+  # ===================
+  playwright-mcp-headless:
+    image: mcr.microsoft.com/playwright:v1.50.0-noble
+    container_name: dev_playwright_mcp_headless
+    restart: unless-stopped
+    ports:
+      - "3001:3000"   # Different port for headless
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - playwright_output_headless:/tmp/playwright-output
+    working_dir: /app
+    command: >
+      bash -c "
+        npm install @playwright/mcp@latest &&
+        npx @playwright/mcp@latest --headless --port 3000 --host 0.0.0.0
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -646,6 +687,7 @@ volumes:
   pgadmin_data:
   prisma_node_modules:
   playwright_output:
+  playwright_output_headless:
 
 networks:
   default:
@@ -970,8 +1012,9 @@ MINIO_BUCKET=uploads
 ARCHON_URL=http://localhost:8501
 QDRANT_URL=http://localhost:6333
 
-# Playwright MCP (if installed)
+# Playwright MCP
 PLAYWRIGHT_MCP_URL=http://localhost:3000
+PLAYWRIGHT_MCP_HEADLESS_URL=http://localhost:3001
 
 # ===========================================
 # WEB UI ACCESS
@@ -1416,63 +1459,93 @@ Playwright MCP provides browser automation capabilities for AI agents via the Mo
 
 - **Repository**: https://github.com/microsoft/playwright-mcp
 - **Purpose**: Enable AI agents to interact with web browsers
-- **Features**: Headless Chrome/Chromium, screenshots, navigation, form filling
+- **Features**: Chrome/Chromium browser control, screenshots, navigation, form filling
 
-### Playwright MCP Configuration
+### Option 1: Docker Container (Recommended)
 
-The service runs in headless mode with Chromium by default:
-
-```yaml
-playwright-mcp:
-  build:
-    context: https://github.com/microsoft/playwright-mcp.git#main
-    dockerfile: Dockerfile
-  container_name: dev_playwright_mcp
-  ports:
-    - "3000:3000"   # SSE transport
-  environment:
-    - NODE_ENV=production
-    - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-  volumes:
-    - playwright_output:/tmp/playwright-output
-    - ./playwright-config:/app/config
-  command: ["node", "cli.js", "--headless", "--browser", "chromium", "--port", "3000", "--host", "0.0.0.0"]
-```
-
-### Playwright MCP Service URLs
-
-| Service | URL | Purpose |
-|---------|-----|---------|
-| Playwright MCP | http://localhost:3000 | SSE transport for AI agents |
-| Output Directory | /tmp/playwright-output | Screenshots, downloads |
-
-### Playwright MCP Commands
+Docker provides consistent, isolated browser automation. **Visible browser mode is the default** for debugging and demos.
 
 ```powershell
-# Check Playwright MCP status
-docker compose logs playwright-mcp
+# Start Playwright MCP (visible browser - default)
+docker compose up -d playwright-mcp
 
-# Restart Playwright MCP
+# Start Playwright MCP headless (for automated tasks)
+docker compose up -d playwright-mcp-headless
+
+# View logs
+docker compose logs -f playwright-mcp
+
+# Restart
 docker compose restart playwright-mcp
 
-# View screenshots/output
-docker compose exec playwright-mcp ls -la /tmp/playwright-output
+# Stop
+docker compose stop playwright-mcp
 ```
 
-### MCP Client Configuration
+### Docker Compose Services
 
-To use Playwright MCP with Claude Code or other MCP clients, add to your MCP config:
+The development stack includes two Playwright MCP services:
+
+| Service | Port | Mode | Use Case |
+|---------|------|------|----------|
+| `playwright-mcp` | 3000 | Visible browser | Debugging, demos, development |
+| `playwright-mcp-headless` | 3001 | Headless | Automated tasks, CI/CD |
+
+### MCP Client Configuration (Docker)
+
+Add to your `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "playwright": {
+      "type": "sse",
       "url": "http://localhost:3000/sse",
-      "transport": "sse"
+      "description": "Playwright with visible browser (default)"
+    },
+    "playwright-headless": {
+      "type": "sse",
+      "url": "http://localhost:3001/sse",
+      "description": "Playwright headless mode"
     }
   }
 }
 ```
+
+### Option 2: NPX (Quick Local Testing)
+
+For quick local testing without Docker:
+
+```powershell
+# Visible browser (default)
+npx @playwright/mcp@latest
+
+# Headless mode
+npx @playwright/mcp@latest --headless
+
+# Specify browser (chromium, firefox, webkit, msedge)
+npx @playwright/mcp@latest --browser firefox
+
+# Custom viewport size
+npx @playwright/mcp@latest --viewport-size "1920x1080"
+
+# Device emulation
+npx @playwright/mcp@latest --device "iPhone 15"
+```
+
+### NPX Command Line Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--browser` | Browser to use | `chromium`, `firefox`, `webkit`, `msedge` |
+| `--headless` | Run without visible browser | (flag only) |
+| `--viewport-size` | Set viewport dimensions | `1280x720` |
+| `--device` | Emulate device | `iPhone 15`, `Pixel 7` |
+| `--user-data-dir` | Persist browser data | `./playwright-data` |
+| `--save-trace` | Save trace files for debugging | (flag only) |
+| `--save-video` | Record video of sessions | (flag only) |
+| `--allowed-hosts` | Restrict to hosts | `github.com,*.example.com` |
+| `--blocked-origins` | Block specific origins | `ad.example.com` |
 
 ### Playwright MCP Capabilities
 
@@ -1486,22 +1559,31 @@ To use Playwright MCP with Claude Code or other MCP clients, add to your MCP con
 | **browser_select** | Select dropdown options |
 | **browser_hover** | Hover over elements |
 | **browser_evaluate** | Execute JavaScript |
+| **browser_pdf** | Generate PDF from page |
+| **browser_wait** | Wait for elements/conditions |
 
-### Custom Configuration
+### Security Options
 
-Create `playwright-config/config.json` for custom settings:
+For production use, restrict allowed hosts:
 
-```json
-{
-  "browser": "chromium",
-  "headless": true,
-  "viewport": {
-    "width": 1280,
-    "height": 720
-  },
-  "timeout": 30000
-}
+```powershell
+# Only allow specific domains
+npx @playwright/mcp@latest --allowed-hosts "github.com,*.anthropic.com,docs.flutter.dev"
+
+# Block ad/tracking domains
+npx @playwright/mcp@latest --blocked-origins "ad.doubleclick.net,analytics.google.com"
 ```
+
+### Which Option to Choose?
+
+| Scenario | Recommendation |
+|----------|----------------|
+| Development (debugging) | **Docker visible** - See what the browser is doing |
+| Development (general) | **Docker visible** - Default for debugging |
+| Team shared environment | **Docker** - Consistent setup |
+| Automated tasks | **Docker headless** - No UI overhead |
+| CI/CD pipelines | **Docker headless** - Fast, no display needed |
+| Quick one-off testing | **NPX** - No container setup |
 
 ---
 
@@ -1672,7 +1754,8 @@ After running the dev environment setup, you'll have:
 | MinIO Console | 9001 | http://localhost:9001 | minioadmin / minioadmin |
 | Archon UI | 8501 | http://localhost:8501 | (configure API keys) |
 | Qdrant | 6333 | http://localhost:6333 | (no auth) |
-| Playwright MCP | 3000 | http://localhost:3000 | (no auth) |
+| Playwright MCP | 3000 | http://localhost:3000 | (visible browser, default) |
+| Playwright Headless | 3001 | http://localhost:3001 | (headless mode) |
 
 ### Redis Stack Modules
 

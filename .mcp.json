@@ -31,7 +31,12 @@
     "playwright": {
       "type": "sse",
       "url": "http://localhost:3000/sse",
-      "description": "Playwright browser automation - run 'setup docker' first to start container"
+      "description": "Playwright browser automation (visible browser) - run 'docker compose up -d playwright-mcp' first"
+    },
+    "playwright-headless": {
+      "type": "sse",
+      "url": "http://localhost:3001/sse",
+      "description": "Playwright headless mode - run 'docker compose up -d playwright-mcp-headless' first"
     },
     "archon": {
       "type": "sse",
