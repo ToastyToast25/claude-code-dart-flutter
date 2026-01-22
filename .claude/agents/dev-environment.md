@@ -1463,17 +1463,54 @@ If you prefer manual configuration, add to `.mcp.json`:
 
 ### Command Line Options
 
+**Browser Control:**
 | Option | Description | Example |
 |--------|-------------|---------|
-| `--browser` | Browser to use | `chromium`, `firefox`, `webkit`, `msedge` |
+| `--browser` | Browser to use | `chrome`, `firefox`, `webkit`, `msedge` |
 | `--headless` | Run without visible browser | (flag only) |
+| `--executable-path` | Path to browser executable | `C:/path/to/browser.exe` |
 | `--viewport-size` | Set viewport dimensions | `1280x720` |
 | `--device` | Emulate device | `iPhone 15`, `Pixel 7` |
-| `--user-data-dir` | Persist browser data | `./playwright-data` |
-| `--save-trace` | Save trace files for debugging | (flag only) |
-| `--save-video` | Record video of sessions | (flag only) |
-| `--allowed-hosts` | Restrict to hosts | `github.com,*.example.com` |
-| `--blocked-origins` | Block specific origins | `ad.example.com` |
+| `--user-agent` | Custom user agent string | `"Mozilla/5.0..."` |
+
+**Context & State:**
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--user-data-dir` | Persist browser profile | `./playwright-data` |
+| `--isolated` | Keep profile in memory only | (flag only) |
+| `--storage-state` | Load cookies/storage from file | `./auth.json` |
+| `--init-script` | JavaScript to run before page scripts | `./setup.js` |
+| `--grant-permissions` | Grant permissions | `geolocation,clipboard-read` |
+
+**Security & Network:**
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--allowed-hosts` | Comma-separated permitted hosts | `github.com,*.anthropic.com` |
+| `--blocked-origins` | Semicolon-separated blocked origins | `ad.example.com` |
+| `--proxy-server` | Specify proxy | `http://myproxy:3128` |
+| `--ignore-https-errors` | Ignore certificate errors | (flag only) |
+
+**Output & Recording:**
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--save-trace` | Save Playwright trace | (flag only) |
+| `--save-video` | Record video of sessions | `--save-video=800x600` |
+| `--save-session` | Save session to output dir | (flag only) |
+| `--output-dir` | Output files directory | `./playwright-output` |
+
+**Capabilities (opt-in):**
+| Option | Description |
+|--------|-------------|
+| `--caps=vision` | Enable coordinate-based interactions |
+| `--caps=pdf` | Enable PDF generation |
+| `--caps=testing` | Enable testing assertions |
+| `--caps=tracing` | Enable tracing tools |
+
+**Timeouts:**
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--timeout-action` | Action timeout (ms) | `5000` |
+| `--timeout-navigation` | Navigation timeout (ms) | `60000` |
 
 ### Usage Examples
 
@@ -1503,20 +1540,54 @@ npx @playwright/mcp@latest --save-trace
 npx @playwright/mcp@latest --allowed-hosts "github.com,*.anthropic.com"
 ```
 
-### Playwright MCP Capabilities
+### Playwright MCP Tools
 
-| Capability | Description |
-|------------|-------------|
-| **browser_navigate** | Navigate to URLs |
-| **browser_click** | Click elements |
-| **browser_type** | Type text into inputs |
-| **browser_screenshot** | Capture screenshots |
-| **browser_scroll** | Scroll the page |
-| **browser_select** | Select dropdown options |
-| **browser_hover** | Hover over elements |
-| **browser_evaluate** | Execute JavaScript |
-| **browser_pdf** | Generate PDF from page |
-| **browser_wait** | Wait for elements/conditions |
+**Core Navigation & Interaction:**
+| Tool | Description |
+|------|-------------|
+| `browser_navigate` | Navigate to a URL |
+| `browser_navigate_back` | Go back in history |
+| `browser_click` | Click an element |
+| `browser_type` | Type text into an input |
+| `browser_fill_form` | Fill form fields |
+| `browser_select_option` | Select dropdown option |
+| `browser_hover` | Hover over element |
+| `browser_drag` | Drag and drop |
+| `browser_press_key` | Press keyboard key |
+| `browser_file_upload` | Upload files |
+| `browser_handle_dialog` | Handle alerts/confirms |
+
+**Page Inspection:**
+| Tool | Description |
+|------|-------------|
+| `browser_snapshot` | Get accessibility snapshot |
+| `browser_take_screenshot` | Capture screenshot |
+| `browser_evaluate` | Execute JavaScript |
+| `browser_wait_for` | Wait for condition |
+| `browser_console_messages` | Get console output |
+| `browser_network_requests` | Get network logs |
+
+**Tab & Browser Management:**
+| Tool | Description |
+|------|-------------|
+| `browser_tabs` | List/create/close/select tabs |
+| `browser_close` | Close the browser |
+| `browser_install` | Install browser if missing |
+| `browser_run_code` | Run custom Playwright code |
+
+**Optional Capabilities (require `--caps` flag):**
+
+| Tool | Capability | Description |
+|------|------------|-------------|
+| `browser_mouse_click_xy` | vision | Click at coordinates |
+| `browser_mouse_drag_xy` | vision | Drag between coordinates |
+| `browser_mouse_move_xy` | vision | Move mouse to coordinates |
+| `browser_pdf_save` | pdf | Generate PDF |
+| `browser_verify_element_visible` | testing | Assert element visible |
+| `browser_verify_text_visible` | testing | Assert text visible |
+| `browser_generate_locator` | testing | Generate element locator |
+| `browser_start_tracing` | tracing | Start trace recording |
+| `browser_stop_tracing` | tracing | Stop trace recording |
 
 ### Visible vs Headless Mode
 
