@@ -17,6 +17,8 @@
     }
   },
   "disabledMcpServers": [
+    "playwright",
+    "archon",
     "postgres",
     "redis",
     "firebase",
@@ -26,6 +28,16 @@
     "slack"
   ],
   "availableServers": {
+    "playwright": {
+      "type": "sse",
+      "url": "http://localhost:3000/sse",
+      "description": "Playwright browser automation - run 'setup docker' first to start container"
+    },
+    "archon": {
+      "type": "sse",
+      "url": "http://localhost:8501/mcp",
+      "description": "Archon AI task management - run 'install archon' first, overrides TodoWrite"
+    },
     "postgres": {
       "type": "stdio",
       "command": "npx",
