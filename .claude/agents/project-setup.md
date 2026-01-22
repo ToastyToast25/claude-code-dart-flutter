@@ -299,7 +299,7 @@ if (-not (Test-Path $refDir)) {
     New-Item -ItemType Directory -Path $refDir | Out-Null
 }
 
-# Clone Jellyflix (primary reference)
+# Clone Jellyflix (Flutter Jellyfin client - video streaming)
 $jellyflixPath = "$refDir/jellyflix"
 if (-not (Test-Path $jellyflixPath)) {
     Write-Host "Cloning Jellyflix..." -ForegroundColor Yellow
@@ -309,7 +309,7 @@ if (-not (Test-Path $jellyflixPath)) {
     Write-Host "[OK] Jellyflix already exists" -ForegroundColor Green
 }
 
-# Clone Finamp (audio streaming reference)
+# Clone Finamp (Flutter Jellyfin music client - audio streaming)
 $finampPath = "$refDir/finamp"
 if (-not (Test-Path $finampPath)) {
     Write-Host "Cloning Finamp..." -ForegroundColor Yellow
@@ -319,8 +319,32 @@ if (-not (Test-Path $finampPath)) {
     Write-Host "[OK] Finamp already exists" -ForegroundColor Green
 }
 
+# Clone IPTVnator (Angular IPTV player - M3U/EPG patterns)
+$iptvnatorPath = "$refDir/iptvnator"
+if (-not (Test-Path $iptvnatorPath)) {
+    Write-Host "Cloning IPTVnator..." -ForegroundColor Yellow
+    git clone --depth 1 https://github.com/4gray/iptvnator.git $iptvnatorPath
+    Write-Host "[OK] IPTVnator cloned" -ForegroundColor Green
+} else {
+    Write-Host "[OK] IPTVnator already exists" -ForegroundColor Green
+}
+
+# Clone Jellyfin server (C# media server - backend API reference)
+$jellyfinPath = "$refDir/jellyfin"
+if (-not (Test-Path $jellyfinPath)) {
+    Write-Host "Cloning Jellyfin server..." -ForegroundColor Yellow
+    git clone --depth 1 https://github.com/jellyfin/jellyfin.git $jellyfinPath
+    Write-Host "[OK] Jellyfin server cloned" -ForegroundColor Green
+} else {
+    Write-Host "[OK] Jellyfin server already exists" -ForegroundColor Green
+}
+
 Write-Host ""
-Write-Host "Reference repos ready for analysis" -ForegroundColor Green
+Write-Host "Reference repos ready for analysis:" -ForegroundColor Green
+Write-Host "  - Jellyflix: Flutter video streaming patterns" -ForegroundColor Gray
+Write-Host "  - Finamp: Flutter audio streaming patterns" -ForegroundColor Gray
+Write-Host "  - IPTVnator: M3U parsing, EPG, playlist management" -ForegroundColor Gray
+Write-Host "  - Jellyfin: Media server backend API reference" -ForegroundColor Gray
 ```
 
 **Then invoke Repository Analyzer Agent** to extract patterns:

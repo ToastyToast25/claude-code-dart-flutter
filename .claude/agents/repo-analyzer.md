@@ -61,7 +61,9 @@ Write-Host "=== Cloning Streaming Reference Repos ===" -ForegroundColor Cyan
 
 $repos = @(
     @{Name="jellyflix"; Url="https://github.com/jellyflix-app/jellyflix.git"; Desc="Jellyfin Flutter client"},
-    @{Name="finamp"; Url="https://github.com/jmshrv/finamp.git"; Desc="Jellyfin music client"}
+    @{Name="finamp"; Url="https://github.com/jmshrv/finamp.git"; Desc="Jellyfin music client"},
+    @{Name="iptvnator"; Url="https://github.com/4gray/iptvnator.git"; Desc="Angular IPTV player (M3U/EPG patterns)"},
+    @{Name="jellyfin"; Url="https://github.com/jellyfin/jellyfin.git"; Desc="Jellyfin media server (backend API reference)"}
 )
 
 foreach ($repo in $repos) {
