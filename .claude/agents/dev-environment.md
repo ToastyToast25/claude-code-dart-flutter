@@ -10,9 +10,26 @@ When setting up a development environment:
 3. **Ask what services are needed** - Database, cache, etc.
 4. **Create Docker configuration** - docker-compose.yml
 5. **IMMEDIATELY start containers** - No waiting, just do it
-6. **Install Archon** - AI agent builder framework
-7. **Configure project connection** - Environment variables, connection strings
-8. **Verify everything works** - Test connections
+6. **WAIT for containers to be healthy** - Don't proceed until all services respond
+7. **Install Archon** - AI agent builder framework
+8. **Store credentials securely** - Write to `.credentials` file (gitignored)
+9. **Configure project connection** - Environment variables, connection strings
+10. **Verify everything works** - Test ALL connections before declaring done
+
+---
+
+## CRITICAL: Complete Setup Requirements
+
+**DO NOT consider setup complete until:**
+- [ ] All containers show "healthy" status in `docker compose ps`
+- [ ] PostgreSQL responds to `pg_isready`
+- [ ] Redis responds to `PING` with `PONG`
+- [ ] All web UIs are accessible (pgAdmin, RedisInsight, etc.)
+- [ ] Credentials are stored in `.credentials` file
+- [ ] `.credentials` is added to `.gitignore`
+- [ ] Connection test from project code succeeds
+
+**If ANY container fails to start or verify, troubleshoot immediately - do not leave setup incomplete.**
 
 ---
 
@@ -197,30 +214,61 @@ if (-not (Test-Path "archon")) {
 }
 ```
 
-### Step 6: Verify All Services
+### Step 6: Verify All Services and Save Credentials
 
 ```powershell
 Write-Host ""
-Write-Host "=== Environment Setup Complete ===" -ForegroundColor Green
+Write-Host "=== Verifying Services ===" -ForegroundColor Cyan
 Write-Host ""
-docker compose ps
+
+$allPassed = $true
+
+# Check container health status
+Write-Host "Checking container health..." -ForegroundColor Yellow
+docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Health}}"
 Write-Host ""
-Write-Host "Testing connections..." -ForegroundColor Cyan
 
 # Test PostgreSQL
+Write-Host "Testing PostgreSQL..." -ForegroundColor Yellow
 $pgResult = docker compose exec -T postgres pg_isready -U dev_user 2>&1
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "[OK] PostgreSQL is ready" -ForegroundColor Green
+    Write-Host "[OK] PostgreSQL is ready and accepting connections" -ForegroundColor Green
 } else {
-    Write-Host "[FAIL] PostgreSQL not ready" -ForegroundColor Red
+    Write-Host "[FAIL] PostgreSQL not ready - retrying..." -ForegroundColor Red
+    Start-Sleep -Seconds 5
+    $pgResult = docker compose exec -T postgres pg_isready -U dev_user 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "[FAIL] PostgreSQL failed after retry" -ForegroundColor Red
+        $allPassed = $false
+    }
 }
 
 # Test Redis
+Write-Host "Testing Redis..." -ForegroundColor Yellow
 $redisResult = docker compose exec -T redis redis-cli ping 2>&1
-if ($redisResult -eq "PONG") {
-    Write-Host "[OK] Redis is ready" -ForegroundColor Green
+if ($redisResult -match "PONG") {
+    Write-Host "[OK] Redis is ready (PONG received)" -ForegroundColor Green
 } else {
-    Write-Host "[FAIL] Redis not ready" -ForegroundColor Red
+    Write-Host "[FAIL] Redis not responding" -ForegroundColor Red
+    $allPassed = $false
+}
+
+# Test pgAdmin web UI
+Write-Host "Testing pgAdmin..." -ForegroundColor Yellow
+try {
+    $response = Invoke-WebRequest -Uri "http://localhost:5050" -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop
+    Write-Host "[OK] pgAdmin is accessible at http://localhost:5050" -ForegroundColor Green
+} catch {
+    Write-Host "[WARN] pgAdmin may still be starting (http://localhost:5050)" -ForegroundColor Yellow
+}
+
+# Test RedisInsight (part of Redis Stack)
+Write-Host "Testing RedisInsight..." -ForegroundColor Yellow
+try {
+    $response = Invoke-WebRequest -Uri "http://localhost:8001" -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop
+    Write-Host "[OK] RedisInsight is accessible at http://localhost:8001" -ForegroundColor Green
+} catch {
+    Write-Host "[WARN] RedisInsight may still be starting (http://localhost:8001)" -ForegroundColor Yellow
 }
 
 # Test Archon
@@ -228,6 +276,108 @@ if (Test-Path "archon") {
     Write-Host "[OK] Archon is installed" -ForegroundColor Green
 } else {
     Write-Host "[WARN] Archon not found" -ForegroundColor Yellow
+}
+
+Write-Host ""
+Write-Host "=== Saving Credentials ===" -ForegroundColor Cyan
+
+# Create .credentials file
+$credentialsContent = @"
+# ===========================================
+# DEVELOPMENT CREDENTIALS - DO NOT COMMIT
+# Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+# ===========================================
+
+# PostgreSQL
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=app_development
+POSTGRES_USER=dev_user
+POSTGRES_PASSWORD=dev_password
+DATABASE_URL=postgresql://dev_user:dev_password@localhost:5432/app_development
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_URL=redis://localhost:6379
+
+# pgAdmin
+PGADMIN_URL=http://localhost:5050
+PGADMIN_EMAIL=admin@localhost.com
+PGADMIN_PASSWORD=admin
+
+# RedisInsight (built into Redis Stack)
+REDISINSIGHT_URL=http://localhost:8001
+
+# MinIO (S3-compatible storage)
+MINIO_ENDPOINT=localhost:9000
+MINIO_CONSOLE_URL=http://localhost:9001
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_BUCKET=uploads
+
+# Mailhog (Email testing)
+MAILHOG_SMTP_HOST=localhost
+MAILHOG_SMTP_PORT=1025
+MAILHOG_WEB_URL=http://localhost:8025
+
+# Prisma Studio
+PRISMA_STUDIO_URL=http://localhost:5555
+
+# Archon (if installed)
+ARCHON_URL=http://localhost:8501
+QDRANT_URL=http://localhost:6333
+
+# Playwright MCP (if installed)
+PLAYWRIGHT_MCP_URL=http://localhost:3000
+"@
+
+$credentialsContent | Out-File -FilePath ".credentials" -Encoding utf8
+Write-Host "[OK] Credentials saved to .credentials" -ForegroundColor Green
+
+# Ensure .credentials is in .gitignore
+if (Test-Path ".gitignore") {
+    $gitignore = Get-Content ".gitignore" -Raw
+    if ($gitignore -notmatch "\.credentials") {
+        Add-Content ".gitignore" "`n# Secure credentials (never commit)`n.credentials"
+        Write-Host "[OK] Added .credentials to .gitignore" -ForegroundColor Green
+    } else {
+        Write-Host "[OK] .credentials already in .gitignore" -ForegroundColor Green
+    }
+} else {
+    @"
+# Secure credentials (never commit)
+.credentials
+
+# Environment files
+.env
+.env.*
+!.env.example
+"@ | Out-File -FilePath ".gitignore" -Encoding utf8
+    Write-Host "[OK] Created .gitignore with .credentials entry" -ForegroundColor Green
+}
+
+# Final status
+Write-Host ""
+if ($allPassed) {
+    Write-Host "=== SETUP COMPLETE ===" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "All services are running and verified!" -ForegroundColor Green
+    Write-Host "Credentials saved to: .credentials" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Quick Access URLs:" -ForegroundColor Cyan
+    Write-Host "  pgAdmin:       http://localhost:5050" -ForegroundColor White
+    Write-Host "  RedisInsight:  http://localhost:8001" -ForegroundColor White
+    Write-Host "  Prisma Studio: http://localhost:5555" -ForegroundColor White
+    Write-Host "  Mailhog:       http://localhost:8025" -ForegroundColor White
+    if (Test-Path "archon") {
+        Write-Host "  Archon:        http://localhost:8501" -ForegroundColor White
+    }
+} else {
+    Write-Host "=== SETUP INCOMPLETE ===" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Some services failed verification. Check logs:" -ForegroundColor Yellow
+    Write-Host "  docker compose logs" -ForegroundColor Gray
 }
 ```
 
@@ -720,6 +870,168 @@ docker compose exec -T postgres psql -U dev_user app_development < backup.sql
 
 # Reset database (recreate container)
 docker compose down -v && docker compose up -d postgres
+```
+
+---
+
+## Secure Credential Storage
+
+**CRITICAL**: Store all credentials in a `.credentials` file that is NEVER committed to git.
+
+### Step 1: Create .credentials File
+
+After containers are running and verified, IMMEDIATELY create the credentials file:
+
+```powershell
+# Create .credentials file with all service credentials
+@"
+# ===========================================
+# DEVELOPMENT CREDENTIALS - DO NOT COMMIT
+# Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+# ===========================================
+
+# PostgreSQL
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=app_development
+POSTGRES_USER=dev_user
+POSTGRES_PASSWORD=dev_password
+DATABASE_URL=postgresql://dev_user:dev_password@localhost:5432/app_development
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_URL=redis://localhost:6379
+
+# pgAdmin
+PGADMIN_EMAIL=admin@localhost.com
+PGADMIN_PASSWORD=admin
+
+# MinIO (S3-compatible storage)
+MINIO_ENDPOINT=localhost:9000
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_BUCKET=uploads
+
+# Archon (if installed)
+ARCHON_URL=http://localhost:8501
+QDRANT_URL=http://localhost:6333
+
+# Playwright MCP (if installed)
+PLAYWRIGHT_MCP_URL=http://localhost:3000
+
+# ===========================================
+# WEB UI ACCESS
+# ===========================================
+# pgAdmin:         http://localhost:5050
+# Prisma Studio:   http://localhost:5555
+# RedisInsight:    http://localhost:8001
+# Redis Commander: http://localhost:8081
+# Mailhog:         http://localhost:8025
+# MinIO Console:   http://localhost:9001
+# Archon:          http://localhost:8501
+# ===========================================
+"@ | Out-File -FilePath ".credentials" -Encoding utf8
+
+Write-Host "Credentials saved to .credentials" -ForegroundColor Green
+```
+
+### Step 2: Add to .gitignore
+
+**ALWAYS ensure .credentials is gitignored:**
+
+```powershell
+# Check if .gitignore exists and add .credentials
+$gitignorePath = ".gitignore"
+$credentialEntry = ".credentials"
+
+if (Test-Path $gitignorePath) {
+    $content = Get-Content $gitignorePath -Raw
+    if ($content -notmatch "\.credentials") {
+        Add-Content $gitignorePath "`n# Secure credentials file`n.credentials"
+        Write-Host "Added .credentials to .gitignore" -ForegroundColor Green
+    } else {
+        Write-Host ".credentials already in .gitignore" -ForegroundColor Yellow
+    }
+} else {
+    @"
+# Secure credentials file
+.credentials
+
+# Environment files
+.env
+.env.*
+!.env.example
+"@ | Out-File -FilePath $gitignorePath -Encoding utf8
+    Write-Host "Created .gitignore with .credentials entry" -ForegroundColor Green
+}
+```
+
+### Step 3: Load Credentials in Dart
+
+```dart
+// lib/core/config/credentials.dart
+import 'dart:io';
+
+/// Loads credentials from .credentials file
+class Credentials {
+  static final Map<String, String> _cache = {};
+  static bool _loaded = false;
+
+  static Future<void> load() async {
+    if (_loaded) return;
+
+    final file = File('.credentials');
+    if (!await file.exists()) {
+      throw Exception('.credentials file not found. Run dev environment setup first.');
+    }
+
+    final lines = await file.readAsLines();
+    for (final line in lines) {
+      if (line.trim().isEmpty || line.startsWith('#')) continue;
+      final parts = line.split('=');
+      if (parts.length >= 2) {
+        final key = parts[0].trim();
+        final value = parts.sublist(1).join('=').trim();
+        _cache[key] = value;
+      }
+    }
+    _loaded = true;
+  }
+
+  static String get(String key, {String? defaultValue}) {
+    return _cache[key] ?? defaultValue ?? '';
+  }
+
+  static String get databaseUrl => get('DATABASE_URL');
+  static String get redisUrl => get('REDIS_URL');
+  static String get minioEndpoint => get('MINIO_ENDPOINT');
+  static String get minioAccessKey => get('MINIO_ACCESS_KEY');
+  static String get minioSecretKey => get('MINIO_SECRET_KEY');
+}
+```
+
+### Verification: Confirm Credentials Saved
+
+```powershell
+# Verify .credentials exists and contains data
+if (Test-Path ".credentials") {
+    Write-Host "[OK] .credentials file exists" -ForegroundColor Green
+    $lineCount = (Get-Content ".credentials" | Measure-Object -Line).Lines
+    Write-Host "     Contains $lineCount lines" -ForegroundColor Gray
+} else {
+    Write-Host "[FAIL] .credentials file NOT found" -ForegroundColor Red
+}
+
+# Verify .gitignore contains .credentials
+if (Test-Path ".gitignore") {
+    $gitignore = Get-Content ".gitignore" -Raw
+    if ($gitignore -match "\.credentials") {
+        Write-Host "[OK] .credentials is in .gitignore" -ForegroundColor Green
+    } else {
+        Write-Host "[WARN] .credentials NOT in .gitignore - SECURITY RISK" -ForegroundColor Red
+    }
+}
 ```
 
 ---
@@ -1372,13 +1684,25 @@ After environment setup:
 
 ## Checklist
 
+### Docker Setup
 - [ ] Docker Desktop installed and running
 - [ ] WSL2 enabled (Windows)
 - [ ] docker-compose.yml created
-- [ ] Containers started successfully
-- [ ] PostgreSQL accessible
-- [ ] Redis accessible (if needed)
-- [ ] Web UIs accessible
-- [ ] .env file configured
+
+### Container Verification (ALL must pass)
+- [ ] Containers started with `docker compose up -d`
+- [ ] All containers show "healthy" in `docker compose ps`
+- [ ] PostgreSQL responds to `pg_isready`
+- [ ] Redis responds to `PING` with `PONG`
+- [ ] Web UIs accessible (pgAdmin, RedisInsight, etc.)
+
+### Credential Storage (CRITICAL)
+- [ ] `.credentials` file created with all service credentials
+- [ ] `.credentials` added to `.gitignore`
+- [ ] Verified `.credentials` will NOT be committed
+
+### Project Connection
+- [ ] Project can read from `.credentials` file
+- [ ] Database connection test passes
+- [ ] Redis connection test passes (if using)
 - [ ] Prisma connected (if using)
-- [ ] Project can connect to database
