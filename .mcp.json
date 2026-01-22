@@ -29,14 +29,16 @@
   ],
   "availableServers": {
     "playwright": {
-      "type": "sse",
-      "url": "http://localhost:3000/sse",
-      "description": "Playwright browser automation (visible browser) - run 'docker compose up -d playwright-mcp' first"
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],
+      "description": "Playwright browser automation (visible browser) - run 'npx playwright install' first"
     },
     "playwright-headless": {
-      "type": "sse",
-      "url": "http://localhost:3001/sse",
-      "description": "Playwright headless mode - run 'docker compose up -d playwright-mcp-headless' first"
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest", "--headless"],
+      "description": "Playwright headless mode (no visible browser)"
     },
     "archon": {
       "type": "sse",

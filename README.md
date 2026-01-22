@@ -328,7 +328,7 @@ This sets up the full development stack:
 - **Redis Stack** (6379) + **RedisInsight** (8001)
 - **Prisma Studio** (5555)
 - **Mailhog** (1025/8025)
-- **Playwright MCP** (3000) - visible browser, (3001) - headless
+- **Playwright MCP** - native Windows install via `claude mcp add`
 - **Supabase** (54321-54327) - local backend (required for Archon)
 - **Archon** (8501) + **Qdrant** (6333)
 

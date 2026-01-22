@@ -335,9 +335,9 @@ SUPABASE_SERVICE_ROLE_KEY=<run 'supabase status' to get key>
 ARCHON_URL=http://localhost:8501
 QDRANT_URL=http://localhost:6333
 
-# Playwright MCP
-PLAYWRIGHT_MCP_URL=http://localhost:3000
-PLAYWRIGHT_MCP_HEADLESS_URL=http://localhost:3001
+# Playwright MCP (native Windows install)
+# Run: npx @playwright/mcp@latest
+# Add: claude mcp add playwright -- npx @playwright/mcp@latest
 "@
 
 $credentialsContent | Out-File -FilePath ".credentials" -Encoding utf8
@@ -374,31 +374,10 @@ if (Test-Path $mcpJsonPath) {
     $mcpConfig = Get-Content $mcpJsonPath -Raw | ConvertFrom-Json
     $mcpModified = $false
 
-    # Check if Playwright MCP container is running (visible browser mode)
-    try {
-        $playwrightCheck = Invoke-WebRequest -Uri "http://localhost:3000" -TimeoutSec 3 -UseBasicParsing -ErrorAction Stop
-        if ($mcpConfig.disabledMcpServers -contains "playwright") {
-            $mcpConfig.disabledMcpServers = @($mcpConfig.disabledMcpServers | Where-Object { $_ -ne "playwright" })
-            $mcpConfig.mcpServers | Add-Member -NotePropertyName "playwright" -NotePropertyValue $mcpConfig.availableServers.playwright -Force
-            $mcpModified = $true
-            Write-Host "[OK] Playwright MCP (visible) enabled in .mcp.json" -ForegroundColor Green
-        }
-    } catch {
-        Write-Host "[SKIP] Playwright MCP not running - start with 'docker compose up -d playwright-mcp'" -ForegroundColor Yellow
-    }
-
-    # Check if Playwright headless container is running
-    try {
-        $playwrightHeadlessCheck = Invoke-WebRequest -Uri "http://localhost:3001" -TimeoutSec 3 -UseBasicParsing -ErrorAction Stop
-        if ($mcpConfig.disabledMcpServers -contains "playwright-headless") {
-            $mcpConfig.disabledMcpServers = @($mcpConfig.disabledMcpServers | Where-Object { $_ -ne "playwright-headless" })
-            $mcpConfig.mcpServers | Add-Member -NotePropertyName "playwright-headless" -NotePropertyValue $mcpConfig.availableServers."playwright-headless" -Force
-            $mcpModified = $true
-            Write-Host "[OK] Playwright MCP (headless) enabled in .mcp.json" -ForegroundColor Green
-        }
-    } catch {
-        Write-Host "[SKIP] Playwright headless not running - start with 'docker compose up -d playwright-mcp-headless'" -ForegroundColor Yellow
-    }
+    # Playwright MCP uses native Windows install (stdio transport)
+    # Add with: claude mcp add playwright -- npx @playwright/mcp@latest
+    Write-Host "[INFO] Playwright MCP: Native Windows install (not Docker)" -ForegroundColor Cyan
+    Write-Host "       Add with: claude mcp add playwright -- npx @playwright/mcp@latest" -ForegroundColor Gray
 
     # Check if Archon is running (SSE-based, needs container)
     if (Test-Path "archon") {
@@ -442,10 +421,12 @@ if ($allPassed) {
         Write-Host "  Archon:        http://localhost:8501" -ForegroundColor White
     }
     Write-Host ""
-    Write-Host "MCP Servers (restart Claude Code if just enabled):" -ForegroundColor Cyan
-    Write-Host "  Playwright:    http://localhost:3000 (visible browser)" -ForegroundColor White
-    Write-Host "  Playwright:    http://localhost:3001 (headless)" -ForegroundColor White
+    Write-Host "MCP Servers:" -ForegroundColor Cyan
+    Write-Host "  Playwright:    npx @playwright/mcp@latest (native Windows)" -ForegroundColor White
     Write-Host "  Archon:        http://localhost:8501/mcp" -ForegroundColor White
+    Write-Host ""
+    Write-Host "To add Playwright MCP:" -ForegroundColor Yellow
+    Write-Host "  claude mcp add playwright -- npx @playwright/mcp@latest" -ForegroundColor Gray
 } else {
     Write-Host "=== SETUP INCOMPLETE ===" -ForegroundColor Red
     Write-Host ""
@@ -636,65 +617,16 @@ services:
       - "8025:8025"  # Web UI
 
   # ===================
-  # Playwright MCP (Browser Automation for AI)
-  # Visible browser mode (default) - great for debugging/demos
+  # Playwright MCP: Installed natively on Windows (not Docker)
+  # See "Playwright MCP" section below for installation
   # GitHub: https://github.com/microsoft/playwright-mcp
   # ===================
-  playwright-mcp:
-    image: mcr.microsoft.com/playwright:v1.50.0-noble
-    container_name: dev_playwright_mcp
-    restart: unless-stopped
-    ports:
-      - "3000:3000"   # SSE transport port
-    environment:
-      - NODE_ENV=production
-      - DISPLAY=:99
-    volumes:
-      - playwright_output:/tmp/playwright-output
-    working_dir: /app
-    command: >
-      bash -c "
-        npm install @playwright/mcp@latest &&
-        npx @playwright/mcp@latest --port 3000 --host 0.0.0.0
-      "
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ===================
-  # Playwright MCP Headless (for automated/CI tasks)
-  # ===================
-  playwright-mcp-headless:
-    image: mcr.microsoft.com/playwright:v1.50.0-noble
-    container_name: dev_playwright_mcp_headless
-    restart: unless-stopped
-    ports:
-      - "3001:3000"   # Different port for headless
-    environment:
-      - NODE_ENV=production
-    volumes:
-      - playwright_output_headless:/tmp/playwright-output
-    working_dir: /app
-    command: >
-      bash -c "
-        npm install @playwright/mcp@latest &&
-        npx @playwright/mcp@latest --headless --port 3000 --host 0.0.0.0
-      "
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 volumes:
   postgres_data:
   redis_data:
   pgadmin_data:
   prisma_node_modules:
-  playwright_output:
-  playwright_output_headless:
 
 networks:
   default:
@@ -1026,9 +958,9 @@ SUPABASE_SERVICE_ROLE_KEY=<run 'supabase status' to get key>
 ARCHON_URL=http://localhost:8501
 QDRANT_URL=http://localhost:6333
 
-# Playwright MCP
-PLAYWRIGHT_MCP_URL=http://localhost:3000
-PLAYWRIGHT_MCP_HEADLESS_URL=http://localhost:3001
+# Playwright MCP (native Windows install)
+# Run: npx @playwright/mcp@latest
+# Add: claude mcp add playwright -- npx @playwright/mcp@latest
 
 # ===========================================
 # WEB UI ACCESS
@@ -1475,79 +1407,61 @@ Playwright MCP provides browser automation capabilities for AI agents via the Mo
 - **Purpose**: Enable AI agents to interact with web browsers
 - **Features**: Chrome/Chromium browser control, screenshots, navigation, form filling
 
-### Option 1: Docker Container (Recommended)
+### Installation (Windows 11)
 
-Docker provides consistent, isolated browser automation. **Visible browser mode is the default** for debugging and demos.
+**Step 1: Install Playwright browsers**
 
 ```powershell
-# Start Playwright MCP (visible browser - default)
-docker compose up -d playwright-mcp
-
-# Start Playwright MCP headless (for automated tasks)
-docker compose up -d playwright-mcp-headless
-
-# View logs
-docker compose logs -f playwright-mcp
-
-# Restart
-docker compose restart playwright-mcp
-
-# Stop
-docker compose stop playwright-mcp
+# Install Playwright and browsers on Windows
+npx playwright install
 ```
 
-### Docker Compose Services
+This downloads Chromium, Firefox, and WebKit browsers to your system.
 
-The development stack includes two Playwright MCP services:
+**Step 2: Add to Claude Code**
 
-| Service | Port | Mode | Use Case |
-|---------|------|------|----------|
-| `playwright-mcp` | 3000 | Visible browser | Debugging, demos, development |
-| `playwright-mcp-headless` | 3001 | Headless | Automated tasks, CI/CD |
+```powershell
+# Add Playwright MCP server to Claude Code (visible browser - default)
+claude mcp add playwright -- npx @playwright/mcp@latest
 
-### MCP Client Configuration (Docker)
+# Or add headless mode
+claude mcp add playwright-headless -- npx @playwright/mcp@latest --headless
+```
 
-Add to your `.mcp.json`:
+**Step 3: Verify installation**
+
+```powershell
+# List MCP servers
+claude mcp list
+
+# Test Playwright
+npx @playwright/mcp@latest --help
+```
+
+### Manual .mcp.json Configuration
+
+If you prefer manual configuration, add to `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "playwright": {
-      "type": "sse",
-      "url": "http://localhost:3000/sse",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],
       "description": "Playwright with visible browser (default)"
     },
     "playwright-headless": {
-      "type": "sse",
-      "url": "http://localhost:3001/sse",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest", "--headless"],
       "description": "Playwright headless mode"
     }
   }
 }
 ```
 
-### Option 2: NPX (Quick Local Testing)
-
-For quick local testing without Docker:
-
-```powershell
-# Visible browser (default)
-npx @playwright/mcp@latest
-
-# Headless mode
-npx @playwright/mcp@latest --headless
-
-# Specify browser (chromium, firefox, webkit, msedge)
-npx @playwright/mcp@latest --browser firefox
-
-# Custom viewport size
-npx @playwright/mcp@latest --viewport-size "1920x1080"
-
-# Device emulation
-npx @playwright/mcp@latest --device "iPhone 15"
-```
-
-### NPX Command Line Options
+### Command Line Options
 
 | Option | Description | Example |
 |--------|-------------|---------|
@@ -1560,6 +1474,34 @@ npx @playwright/mcp@latest --device "iPhone 15"
 | `--save-video` | Record video of sessions | (flag only) |
 | `--allowed-hosts` | Restrict to hosts | `github.com,*.example.com` |
 | `--blocked-origins` | Block specific origins | `ad.example.com` |
+
+### Usage Examples
+
+```powershell
+# Default (visible Chromium browser)
+npx @playwright/mcp@latest
+
+# Headless mode (for automation)
+npx @playwright/mcp@latest --headless
+
+# Use Firefox instead
+npx @playwright/mcp@latest --browser firefox
+
+# Use Microsoft Edge
+npx @playwright/mcp@latest --browser msedge
+
+# Mobile device emulation
+npx @playwright/mcp@latest --device "iPhone 15"
+
+# Custom viewport
+npx @playwright/mcp@latest --viewport-size "1920x1080"
+
+# Save trace for debugging
+npx @playwright/mcp@latest --save-trace
+
+# Restrict to specific domains
+npx @playwright/mcp@latest --allowed-hosts "github.com,*.anthropic.com"
+```
 
 ### Playwright MCP Capabilities
 
@@ -1576,28 +1518,14 @@ npx @playwright/mcp@latest --device "iPhone 15"
 | **browser_pdf** | Generate PDF from page |
 | **browser_wait** | Wait for elements/conditions |
 
-### Security Options
+### Visible vs Headless Mode
 
-For production use, restrict allowed hosts:
+| Mode | Use Case | Command |
+|------|----------|---------|
+| **Visible** (default) | Debugging, demos, watching automation | `npx @playwright/mcp@latest` |
+| **Headless** | Automated tasks, CI/CD, background work | `npx @playwright/mcp@latest --headless` |
 
-```powershell
-# Only allow specific domains
-npx @playwright/mcp@latest --allowed-hosts "github.com,*.anthropic.com,docs.flutter.dev"
-
-# Block ad/tracking domains
-npx @playwright/mcp@latest --blocked-origins "ad.doubleclick.net,analytics.google.com"
-```
-
-### Which Option to Choose?
-
-| Scenario | Recommendation |
-|----------|----------------|
-| Development (debugging) | **Docker visible** - See what the browser is doing |
-| Development (general) | **Docker visible** - Default for debugging |
-| Team shared environment | **Docker** - Consistent setup |
-| Automated tasks | **Docker headless** - No UI overhead |
-| CI/CD pipelines | **Docker headless** - Fast, no display needed |
-| Quick one-off testing | **NPX** - No container setup |
+**Recommendation**: Use visible mode during development to see what the browser is doing, switch to headless for production/automation.
 
 ---
 
@@ -1882,8 +1810,8 @@ After running the dev environment setup, you'll have:
 | Supabase API | 54321 | http://localhost:54321 | anon key / service key |
 | Supabase Studio | 54323 | http://localhost:54323 | (no auth) |
 | Supabase DB | 54322 | localhost:54322 | postgres / postgres |
-| Playwright MCP | 3000 | http://localhost:3000 | (visible browser, default) |
-| Playwright Headless | 3001 | http://localhost:3001 | (headless mode) |
+| Playwright MCP | - | `npx @playwright/mcp@latest` | (native Windows, visible) |
+| Playwright Headless | - | `npx @playwright/mcp@latest --headless` | (native Windows, headless) |
 
 ### Redis Stack Modules
 
